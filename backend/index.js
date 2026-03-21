@@ -29,6 +29,10 @@ if (!fs.existsSync(uploadDir)) {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/feedback', require('./routes/feedbackRoutes'));
 app.use('/api/receipts', require('./routes/receiptRoutes'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/communities', require('./routes/communities'));
+app.use('/api/events', require('./routes/events'));
+app.use('/api/memberships', require('./routes/memberships'));
 
 // Serve uploads folder static
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

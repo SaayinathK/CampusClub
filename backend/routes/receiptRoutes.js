@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { getReceipts, uploadReceipt, deleteReceipt } = require('../controllers/receiptController');
-const auth = require('../middleware/auth');
+const { protect: auth } = require('../middleware/auth');
 
 // Multer Storage setup
 const storage = multer.diskStorage({

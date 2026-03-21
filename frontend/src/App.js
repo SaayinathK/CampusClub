@@ -1,16 +1,40 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import EventCarousel from './components/EventCarousel';
 import Features from './components/Features';
 import Committees from './components/Committees';
 import Footer from './components/Footer';
+import DashboardLayout from './components/DashboardLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Events from './pages/Events';
 import EventDetails from './pages/EventDetails';
+import Clubs from './pages/Clubs';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import Profile from './pages/Profile';
+import NotFound from './pages/NotFound';
 import { initialEvents } from './constants';
+import { AuthProvider } from './context/AuthContext';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminCommunities from './pages/admin/AdminCommunities';
+import AdminEvents from './pages/admin/AdminEvents';
+
+// Community Admin Pages
+import CommunityAdminDashboard from './pages/communityAdmin/CommunityAdminDashboard';
+import CommunityAdminProfile from './pages/communityAdmin/CommunityAdminProfile';
+import CommunityAdminMembers from './pages/communityAdmin/CommunityAdminMembers';
+import CommunityAdminEvents from './pages/communityAdmin/CommunityAdminEvents';
+
+// Student Pages
+import StudentDashboard from './pages/student/StudentDashboard';
+import StudentProfile from './pages/student/StudentProfile';
+
 
 const Home = ({ events }) => (
   <>
@@ -31,69 +55,92 @@ const Home = ({ events }) => (
 );
 
 function App() {
-  const [events, setEvents] = useState(initialEvents);
-
-  const addFeedback = async (eventId, rating, feedback) => {
-    try {
-      const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user'));
-      const username = user ? user.username : 'Anonymous';
-
-      const res = await fetch('http://localhost:5000/api/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          eventId,
-          rating,
-          comment: feedback,
-          username
-        }),
-      });
-
-      if (res.ok) {
-        setEvents(prevEvents => prevEvents.map(event => {
-          if (event.id === eventId) {
-            return {
-              ...event,
-              ratings: [...event.ratings, rating],
-              feedbacks: [...event.feedbacks, feedback]
-            };
-          }
-          return event;
-        }));
-      } else if (res.status === 401) {
-        alert('Your session has expired or is invalid. Please sign in again.');
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        window.location.reload();
-      } else {
-        console.error('Failed to submit feedback to backend');
-      }
-    } catch (error) {
-      console.error('Error submitting feedback:', error);
-    }
-  };
+  const [events] = useState(initialEvents);
 
   return (
+    <AuthProvider>
     <Router>
+      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
       <div className="min-h-screen">
         <Navbar />
         <main>
           <Routes>
             <Route path="/" element={<Home events={events} />} />
-            <Route path="/events" element={<Events events={events} />} />
-            <Route path="/event/:id" element={<EventDetails events={events} onAddFeedback={addFeedback} />} />
+            <Route path="/events" element={
+              <ProtectedRoute message="Please sign in to browse campus events.">
+                <Events />
+              </ProtectedRoute>
+            } />
+            <Route path="/clubs" element={
+              <ProtectedRoute message="Please sign in to browse campus clubs.">
+                <Clubs />
+              </ProtectedRoute>
+            } />
+            <Route path="/events/:id" element={
+              <ProtectedRoute message="Please sign in to view event details.">
+                <EventDetails />
+              </ProtectedRoute>
+            } />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/profile" element={<Profile />} />
+            
+            {/* Admin — wrapped in sidebar layout */}
+            <Route path="/admin" element={
+              <ProtectedRoute roles={['admin']}>
+                <DashboardLayout><AdminDashboard /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute roles={['admin']}>
+                <DashboardLayout><AdminUsers /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/communities" element={
+              <ProtectedRoute roles={['admin']}>
+                <DashboardLayout><AdminCommunities /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/events" element={
+              <ProtectedRoute roles={['admin']}>
+                <DashboardLayout><AdminEvents /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+
+            {/* Community Admin — wrapped in sidebar layout */}
+            <Route path="/community-admin" element={
+              <ProtectedRoute roles={['community_admin']}>
+                <DashboardLayout><CommunityAdminDashboard /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/community-admin/profile" element={
+              <ProtectedRoute roles={['community_admin']}>
+                <DashboardLayout><CommunityAdminProfile /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/community-admin/members" element={
+              <ProtectedRoute roles={['community_admin']}>
+                <DashboardLayout><CommunityAdminMembers /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/community-admin/events" element={
+              <ProtectedRoute roles={['community_admin']}>
+                <DashboardLayout><CommunityAdminEvents /></DashboardLayout>
+              </ProtectedRoute>
+            } />
+
+            {/* Student */}
+            <Route path="/student" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />
+            <Route path="/student/profile" element={<ProtectedRoute roles={['student']}><StudentProfile /></ProtectedRoute>} />
+
+            {/* Fallback */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />
       </div>
     </Router>
+    </AuthProvider>
   );
 }
 

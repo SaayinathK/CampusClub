@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, LogIn } from 'lucide-react';
+import { Mail, Lock, ArrowRight, LogIn, Info } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
+const ROLE_ROUTES = {
+  admin: '/admin',
+  community_admin: '/community-admin',
+  student: '/student',
+};
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -9,7 +16,15 @@ const SignIn = () => {
     password: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const searchParams = new URLSearchParams(location.search);
+  const redirectMessage = location.state?.message ||
+    (searchParams.get('reason') === 'session_expired'
+      ? 'Your session has expired. Please sign in again to continue.'
+      : null);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,31 +33,13 @@ const SignIn = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        // Save token to localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // Success animation could be added here, moving to dashboard
-        navigate('/');
-      } else {
-        alert(data.message || 'Login failed! Please check your credentials.');
-      }
-    } catch (error) {
-      console.error('Login Error:', error);
-      alert('Could not connect to the server. Is the backend running?');
+      const user = await login(formData.email, formData.password);
+      navigate(ROLE_ROUTES[user.role] || '/');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed! Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -101,6 +98,17 @@ const SignIn = () => {
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
 
           <form onSubmit={handleSignIn} className="space-y-6 relative z-10">
+            {redirectMessage && (
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl px-4 py-3 text-blue-300 text-xs font-bold tracking-wide flex items-center gap-2">
+                <Info size={14} className="shrink-0" />
+                {redirectMessage}
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-xs font-bold tracking-wide">
+                {error}
+              </div>
+            )}
             <div className="space-y-2 group">
               <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-blue-400 transition-colors ml-1">Email Address</label>
               <div className="relative">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Lock, BookOpen, ShieldCheck, Users, ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -11,13 +11,42 @@ const SignUp = () => {
     email: '',
     password: '',
     itNumber: '',
+    communityName: '',
+    communityDescription: '',
+    communityCategory: '',
+    requestedCommunity: '',
   });
+  const [communities, setCommunities] = useState([]);
+  const [communitiesLoading, setCommunitiesLoading] = useState(false);
+  const [communitiesError, setCommunitiesError] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const navigate = useNavigate();
 
+  const fetchCommunities = () => {
+    setCommunitiesLoading(true);
+    setCommunitiesError(false);
+    fetch('http://localhost:5000/api/communities?limit=100')
+      .then(res => res.json())
+      .then(data => {
+        setCommunities(data.data || []);
+        setCommunitiesLoading(false);
+      })
+      .catch(() => {
+        setCommunities([]);
+        setCommunitiesLoading(false);
+        setCommunitiesError(true);
+      });
+  };
+
+  useEffect(() => {
+    if (role === 'student') {
+      fetchCommunities();
+    }
+  }, [role]);
+
   const roles = [
-    { id: 'sliit', title: 'SLIIT Student', icon: BookOpen, desc: 'Requires campus email & IT number', color: 'from-blue-500 to-cyan-400' },
-    { id: 'community', title: 'Community Admin', icon: Users, desc: 'Manage your own community', color: 'from-purple-500 to-pink-400' },
+    { id: 'student', title: 'SLIIT Student', icon: BookOpen, desc: 'Requires campus email & IT number', color: 'from-blue-500 to-cyan-400' },
+    { id: 'community_admin', title: 'Community Admin', icon: Users, desc: 'Manage your own community', color: 'from-purple-500 to-pink-400' },
     { id: 'external', title: 'External Participant', icon: User, desc: 'Join as a guest or partner', color: 'from-emerald-500 to-teal-400' },
     { id: 'admin', title: 'Admin', icon: ShieldCheck, desc: 'Full system management', color: 'from-orange-500 to-red-400' },
   ];
@@ -76,7 +105,16 @@ const SignUp = () => {
         email: formData.email,
         password: formData.password,
         role: role,
-        otp: otp.join('')
+        otp: otp.join(''),
+        itNumber: formData.itNumber,
+        ...(role === 'community_admin' ? {
+          communityName: formData.communityName,
+          communityDescription: formData.communityDescription,
+          communityCategory: formData.communityCategory,
+        } : {}),
+        ...(role === 'student' ? {
+          requestedCommunity: formData.requestedCommunity,
+        } : {}),
       };
 
       const res = await fetch('http://localhost:5000/api/auth/register', {
@@ -89,9 +127,11 @@ const SignUp = () => {
 
       if (res.ok) {
         setStep(4);
-        setTimeout(() => {
-          navigate('/signin');
-        }, 3000);
+        if (role !== 'student' && role !== 'community_admin') {
+          setTimeout(() => {
+            navigate('/signin');
+          }, 3000);
+        }
       } else {
         alert('Error: ' + (data.message || 'Registration failed'));
       }
@@ -208,7 +248,7 @@ const SignUp = () => {
 
                   <div className="space-y-2 group">
                     <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">
-                      {role === 'sliit' ? 'Campus Email' : 'Email Address'}
+                      {role === 'student' ? 'Campus Email' : 'Email Address'}
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={20} />
@@ -216,14 +256,14 @@ const SignUp = () => {
                         type="email"
                         name="email"
                         required
-                        placeholder={role === 'sliit' ? 'it2XXXXX@my.sliit.lk' : 'you@example.com'}
+                        placeholder={role === 'student' ? 'it2XXXXX@my.sliit.lk' : 'you@example.com'}
                         className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner"
                         onChange={handleInputChange}
                       />
                     </div>
                   </div>
 
-                  {role === 'sliit' && (
+                  {role === 'student' && (
                     <div className="space-y-2 group">
                       <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-cyan-400 transition-colors">IT Number</label>
                       <div className="relative">
@@ -238,6 +278,102 @@ const SignUp = () => {
                         />
                       </div>
                     </div>
+                  )}
+
+                  {role === 'student' && (
+                    <div className="space-y-2 group">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-blue-400 transition-colors">
+                          Select Community
+                        </label>
+                        {communitiesError && (
+                          <button
+                            type="button"
+                            onClick={fetchCommunities}
+                            className="text-xs text-blue-400 hover:text-blue-300 uppercase tracking-widest font-bold"
+                          >
+                            Retry
+                          </button>
+                        )}
+                      </div>
+                      <select
+                        name="requestedCommunity"
+                        required
+                        value={formData.requestedCommunity}
+                        onChange={handleInputChange}
+                        disabled={communitiesLoading}
+                        className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white disabled:opacity-50 disabled:cursor-wait"
+                      >
+                        {communitiesLoading ? (
+                          <option value="">Loading communities...</option>
+                        ) : communitiesError ? (
+                          <option value="">Failed to load — click Retry</option>
+                        ) : communities.length === 0 ? (
+                          <option value="">No communities available yet</option>
+                        ) : (
+                          <>
+                            <option value="">-- Choose your community --</option>
+                            {communities.map(c => (
+                              <option key={c._id} value={c._id}>
+                                {c.name}{c.category ? ` — ${c.category}` : ''}
+                              </option>
+                            ))}
+                          </>
+                        )}
+                      </select>
+                      {communities.length > 0 && (
+                        <p className="text-xs text-gray-600 uppercase tracking-widest">
+                          {communities.length} communit{communities.length === 1 ? 'y' : 'ies'} available
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {role === 'community_admin' && (
+                    <>
+                      <div className="space-y-2 group">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">Community Name</label>
+                        <input
+                          type="text"
+                          name="communityName"
+                          required
+                          placeholder="e.g. FOSS Community"
+                          value={formData.communityName}
+                          onChange={handleInputChange}
+                          className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white"
+                        />
+                      </div>
+                      <div className="space-y-2 group">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">Community Description</label>
+                        <textarea
+                          name="communityDescription"
+                          required
+                          placeholder="Describe your community..."
+                          value={formData.communityDescription}
+                          onChange={handleInputChange}
+                          rows={3}
+                          className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white resize-none"
+                        />
+                      </div>
+                      <div className="space-y-2 group">
+                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">Category</label>
+                        <select
+                          name="communityCategory"
+                          required
+                          value={formData.communityCategory}
+                          onChange={handleInputChange}
+                          className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white"
+                        >
+                          <option value="">-- Select a category --</option>
+                          <option value="Technical">Technical</option>
+                          <option value="Cultural">Cultural</option>
+                          <option value="Sports">Sports</option>
+                          <option value="Academic">Academic</option>
+                          <option value="Arts">Arts</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                    </>
                   )}
 
                   <div className="space-y-2 group">
@@ -348,7 +484,15 @@ const SignUp = () => {
                 <div className="absolute inset-[-50%] animate-spin-slow rounded-full bg-gradient-to-tr from-transparent via-emerald-500/10 to-transparent" />
               </div>
               <h1 className="text-5xl font-black uppercase mb-4 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Welcome Aboard</h1>
-              <p className="text-gray-400 text-lg">Routing protocols engaged...</p>
+              {(role === 'student' || role === 'community_admin') ? (
+                <>
+                  <p className="text-gray-300 text-lg font-semibold mb-2">Application Submitted!</p>
+                  <p className="text-gray-400 text-base">Your application is pending approval. You will be notified once approved.</p>
+                  <Link to="/signin" className="inline-block mt-6 text-sm text-blue-400 hover:text-blue-300 underline underline-offset-4">Go to Sign In</Link>
+                </>
+              ) : (
+                <p className="text-gray-400 text-lg">Routing protocols engaged...</p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

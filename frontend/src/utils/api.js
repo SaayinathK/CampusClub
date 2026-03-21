@@ -1,0 +1,45 @@
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:5000/api',
+});
+
+// Attach token to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Handle expired / invalid tokens globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    const msg = error.response?.data?.message || '';
+
+    if (status === 401) {
+      // Token is missing, expired, or invalid — clear session and go to sign-in
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      const publicPaths = ['/signin', '/signup', '/'];
+      if (!publicPaths.includes(window.location.pathname)) {
+        window.location.href = '/signin';
+      }
+    } else if (status === 403 && msg === 'Access denied: insufficient permissions') {
+      // Token has a stale/wrong role — force re-login so a fresh token is issued
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      const publicPaths = ['/signin', '/signup', '/'];
+      if (!publicPaths.includes(window.location.pathname)) {
+        window.location.href = '/signin?reason=session_expired';
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;

@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Community = require('../models/Community');
 const OTP = require('../models/OTP');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -57,7 +58,7 @@ exports.sendOTP = async (req, res) => {
 // Register a new user
 exports.register = async (req, res) => {
     try {
-        const { username, email, password, otp, role } = req.body;
+        const { name, username, email, password, otp, role, itNumber, communityName, communityDescription, communityCategory, requestedCommunity } = req.body;
 
         // Verify OTP
         if (!otp) {
@@ -80,22 +81,63 @@ exports.register = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        const userRole = role || 'external';
+        // Admins and external users are auto-approved; others need approval
+        const userStatus = (userRole === 'admin' || userRole === 'external') ? 'approved' : 'pending';
+
         // Create new user
         const newUser = new User({
-            username,
+            name: name || username,
             email,
             password: hashedPassword,
-            role: role || 'external',
+            role: userRole,
+            status: userStatus,
+            itNumber,
+            communityName,
+            communityDescription,
+            communityCategory,
+            ...(userRole === 'student' && requestedCommunity ? { requestedCommunity } : {}),
         });
 
         await newUser.save();
 
+        // If community admin, create a pending Community document immediately
+        if (userRole === 'community_admin' && communityName) {
+            const community = await Community.create({
+                name: communityName,
+                description: communityDescription || '',
+                category: communityCategory || 'Other',
+                admin: newUser._id,
+                status: 'pending',
+            });
+            // Link the user to their community right away
+            await User.findByIdAndUpdate(newUser._id, { managedCommunity: community._id });
+        }
+
         // Delete used OTP
         await OTP.deleteMany({ email });
 
-        res.status(201).json({ message: 'User registered successfully' });
+        const message = userStatus === 'pending'
+            ? 'Registration submitted! Your account is pending admin approval.'
+            : 'User registered successfully';
+
+        res.status(201).json({ message });
     } catch (error) {
         console.error('Registration error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Get current logged-in user
+exports.getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id)
+            .select('-password')
+            .populate('managedCommunity', 'name status')
+            .lean();
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.status(200).json({ user });
+    } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -105,8 +147,11 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check user existence
-        const user = await User.findOne({ email });
+        // Check user existence — use lean() so Mongoose does NOT apply schema defaults
+        // to old documents missing the `status` field (avoids false 'pending' blocks)
+        const user = await User.findOne({ email })
+            .populate('managedCommunity', 'name status')
+            .lean();
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -117,12 +162,29 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate JWT token
+        // Block pending/rejected accounts — only for roles that require approval.
+        // Old accounts with legacy role names ('sliit', 'community') are not blocked.
+        const rolesRequiringApproval = ['community_admin', 'student'];
+        if (rolesRequiringApproval.includes(user.role)) {
+            if (user.status === 'pending') {
+                const who = user.role === 'community_admin' ? 'Admin' : 'Community Admin';
+                return res.status(403).json({ message: `Your account is pending ${who} approval.` });
+            }
+            if (user.status === 'rejected') {
+                return res.status(403).json({ message: `Your account has been rejected. Reason: ${user.rejectionReason || 'Not specified'}` });
+            }
+        }
+
+        // Normalize legacy role names to the current enum values
+        const ROLE_MAP = { community: 'community_admin', sliit: 'student' };
+        const normalizedRole = ROLE_MAP[user.role] || user.role;
+
+        // Generate JWT token — include normalized role so authorize() middleware works
         const tokenSecret = process.env.JWT_SECRET || 'supersecretkey';
         const token = jwt.sign(
-            { id: user._id },
+            { id: user._id, role: normalizedRole },
             tokenSecret,
-            { expiresIn: '1d' }
+            { expiresIn: '90d' }
         );
 
         res.status(200).json({
@@ -130,9 +192,11 @@ exports.login = async (req, res) => {
             token,
             user: {
                 id: user._id,
-                username: user.username,
+                name: user.name || user.username,
                 email: user.email,
-                role: user.role,
+                role: normalizedRole,
+                status: user.status,
+                managedCommunity: user.managedCommunity,
             }
         });
     } catch (error) {

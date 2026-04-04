@@ -50,7 +50,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(res.data.user));
     } catch (err) {
       const status = err?.response?.status;
-      if (status === 401) {
+      if (status === 401 || status === 404) {
+        // 401 = invalid token, 404 = user no longer exists in DB (e.g. after DB reset)
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);

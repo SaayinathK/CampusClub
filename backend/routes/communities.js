@@ -99,7 +99,7 @@ router.put('/:id', protect, authorize('community_admin', 'admin'), async (req, r
     if (!community) return res.status(404).json({ success: false, message: 'Community not found' });
 
     // Community admin can only update their own community
-    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id) {
+    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized to update this community' });
     }
 
@@ -171,7 +171,7 @@ router.get('/:id/members', protect, authorize('community_admin', 'admin'), async
 
     if (!community) return res.status(404).json({ success: false, message: 'Community not found' });
 
-    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id) {
+    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id.toString().toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
@@ -218,7 +218,7 @@ router.get('/:id/join-requests', protect, authorize('community_admin', 'admin'),
     const community = await Community.findById(req.params.id);
     if (!community) return res.status(404).json({ success: false, message: 'Community not found' });
 
-    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id) {
+    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
@@ -240,7 +240,7 @@ router.put('/:id/join-requests/:requestId/approve', protect, authorize('communit
     const community = await Community.findById(req.params.id);
     if (!community) return res.status(404).json({ success: false, message: 'Community not found' });
 
-    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id) {
+    if (req.user.role === 'community_admin' && community.admin.toString() !== req.user.id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 

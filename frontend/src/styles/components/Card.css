@@ -1,0 +1,37 @@
+.card {
+  overflow: hidden;
+  border: 1px solid #f3f4f6;
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.card--hoverable {
+  cursor: pointer;
+  transition: box-shadow 200ms ease;
+}
+
+.card--hoverable:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card__header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.card__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-slate-900);
+}
+
+.card__content {
+  padding: 1.5rem;
+}
+
+.card__footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #f3f4f6;
+  background: var(--color-gray-50);
+}

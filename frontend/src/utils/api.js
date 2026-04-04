@@ -26,14 +26,6 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       const publicPaths = ['/signin', '/signup', '/'];
       if (!publicPaths.includes(window.location.pathname)) {
-        window.location.href = '/signin';
-      }
-    } else if (status === 403 && msg === 'Access denied: insufficient permissions') {
-      // Token has a stale/wrong role — force re-login so a fresh token is issued
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      const publicPaths = ['/signin', '/signup', '/'];
-      if (!publicPaths.includes(window.location.pathname)) {
         window.location.href = '/signin?reason=session_expired';
       }
     }

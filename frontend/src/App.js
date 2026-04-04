@@ -59,7 +59,7 @@ function App() {
 
   return (
     <AuthProvider>
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
       <div className="min-h-screen">
         <Navbar />

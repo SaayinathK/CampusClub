@@ -51,9 +51,11 @@ const EventDetails = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!feedback.trim()) return;
+
     try {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user'));
+
       const res = await fetch('http://localhost:5000/api/feedback', {
         method: 'POST',
         headers: {
@@ -62,6 +64,7 @@ const EventDetails = () => {
         },
         body: JSON.stringify({ eventId: id, rating, comment: feedback, username: user?.name }),
       });
+
       if (res.ok) {
         setSubmitted(true);
         setFeedback('');
@@ -74,41 +77,56 @@ const EventDetails = () => {
     }
   };
 
-  if (loading) return (
-    <div className="pt-32 flex flex-col items-center justify-center min-h-screen gap-4">
-      <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-      <span className="text-blue-400 text-sm font-bold uppercase tracking-widest animate-pulse">Loading Event...</span>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="pt-32 flex flex-col items-center justify-center min-h-screen gap-4">
+        <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+        <span className="text-blue-400 text-sm font-bold uppercase tracking-widest animate-pulse">Loading Event...</span>
+      </div>
+    );
 
-  if (notFound || !event) return (
-    <div className="pt-32 text-center min-h-screen">
-      <div className="text-6xl mb-4">🔍</div>
-      <h2 className="text-2xl font-black uppercase mb-4">Event Not Found</h2>
-      <Link to="/events" className="text-blue-400 hover:text-blue-300 font-bold uppercase text-sm tracking-widest">
-        ← Back to Events
-      </Link>
-    </div>
-  );
+  if (notFound || !event)
+    return (
+      <div className="pt-32 text-center min-h-screen">
+        <div className="text-6xl mb-4">🔍</div>
+        <h2 className="text-2xl font-black uppercase mb-4">Event Not Found</h2>
+        <Link to="/events" className="text-blue-400 hover:text-blue-300 font-bold uppercase text-sm tracking-widest">
+          ← Back to Events
+        </Link>
+      </div>
+    );
 
-  const avgRating = dbFeedbacks.length > 0
-    ? (dbFeedbacks.reduce((a, b) => a + b.rating, 0) / dbFeedbacks.length).toFixed(1)
-    : 'N/A';
+  // Merge local feedbacks + db feedbacks
+  const localFeedbacks = (event.feedbacks || []).map((f, i) => ({
+    comment: f,
+    rating: event.ratings[i],
+    username: 'Student Peer',
+  }));
+  const totalFeedbacks = [...localFeedbacks, ...dbFeedbacks];
+
+  const avgRating =
+    totalFeedbacks.length > 0
+      ? (totalFeedbacks.reduce((acc, f) => acc + f.rating, 0) / totalFeedbacks.length).toFixed(1)
+      : 'N/A';
 
   const storedUser = JSON.parse(localStorage.getItem('user'));
-  const canReview = storedUser && (storedUser.role === 'student' || storedUser.role === 'external' || storedUser.role === 'sliit');
+  const canReview =
+    storedUser && ['student', 'external', 'sliit'].includes(storedUser.role);
 
   return (
     <div className="pt-32 pb-24 min-h-screen">
       <div className="container mx-auto px-6 max-w-6xl">
-        <Link to="/events" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-8 uppercase text-xs font-black tracking-widest transition-colors">
+        <Link
+          to="/events"
+          className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-8 uppercase text-xs font-black tracking-widest transition-colors"
+        >
           <ArrowLeft size={14} /> Back to Events
         </Link>
 
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Left: Event Info */}
           <div>
-            {/* Cover image */}
+            {/* Cover Image */}
             <div className="rounded-3xl overflow-hidden mb-8 shadow-2xl shadow-blue-500/10 bg-gradient-to-br from-blue-900/40 to-purple-900/40 h-[380px]">
               {event.coverImage ? (
                 <img src={event.coverImage} alt={event.title} className="w-full h-full object-cover" />
@@ -119,7 +137,7 @@ const EventDetails = () => {
               )}
             </div>
 
-            {/* Meta badges */}
+            {/* Badges */}
             <div className="flex flex-wrap items-center gap-3 mb-5">
               <span className="px-3 py-1 rounded-full bg-blue-600 text-[10px] font-black uppercase tracking-widest text-white">
                 {event.category}
@@ -134,19 +152,21 @@ const EventDetails = () => {
                   💻 Virtual
                 </span>
               )}
-              {dbFeedbacks.length > 0 && (
+              {totalFeedbacks.length > 0 && (
                 <span className="flex items-center gap-1 text-yellow-400 font-bold text-sm">
-                  ⭐ {avgRating} <span className="text-gray-500 text-xs">({dbFeedbacks.length} reviews)</span>
+                  ⭐ {avgRating} <span className="text-gray-500 text-xs">({totalFeedbacks.length} reviews)</span>
                 </span>
               )}
             </div>
 
             <h1 className="text-4xl md:text-5xl font-black mb-6 uppercase leading-tight">{event.title}</h1>
 
+            {/* Event Meta */}
             <div className="space-y-3 text-gray-400 text-sm font-bold uppercase tracking-widest mb-8">
               <div className="flex items-center gap-3">
                 <Calendar size={16} className="text-blue-500 shrink-0" />
-                {fmt(event.startDate)}{event.endDate && event.endDate !== event.startDate ? ` – ${fmt(event.endDate)}` : ''}
+                {fmt(event.startDate)}
+                {event.endDate && event.endDate !== event.startDate ? ` – ${fmt(event.endDate)}` : ''}
               </div>
               {event.venue && (
                 <div className="flex items-center gap-3">
@@ -172,11 +192,10 @@ const EventDetails = () => {
             <p className="text-gray-400 leading-loose">{event.description}</p>
           </div>
 
-          {/* Right: Feedback */}
+          {/* Right: Feedback Section */}
           <div className="glass-dark p-8 md:p-10 rounded-3xl border border-white/5 h-fit">
             <h2 className="text-2xl font-black mb-8 uppercase tracking-widest">Reviews</h2>
 
-            {/* Feedback form */}
             {!storedUser ? (
               <div className="bg-blue-500/10 border border-blue-500/30 p-8 rounded-2xl text-center mb-8">
                 <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-4 leading-loose">
@@ -204,8 +223,12 @@ const EventDetails = () => {
                   <label className="block text-xs font-black uppercase text-gray-500 mb-3 tracking-widest">Rating</label>
                   <div className="flex gap-3">
                     {[1, 2, 3, 4, 5].map(v => (
-                      <button key={v} type="button" onClick={() => setRating(v)}
-                        className={`w-11 h-11 rounded-xl font-black transition-all ${rating === v ? 'bg-blue-600 text-white scale-110 shadow-xl shadow-blue-500/30' : 'bg-white/5 text-gray-500 hover:text-white border border-white/10'}`}>
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setRating(v)}
+                        className={`w-11 h-11 rounded-xl font-black transition-all ${rating === v ? 'bg-blue-600 text-white scale-110 shadow-xl shadow-blue-500/30' : 'bg-white/5 text-gray-500 hover:text-white border border-white/10'}`}
+                      >
                         {v}
                       </button>
                     ))}
@@ -213,31 +236,43 @@ const EventDetails = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase text-gray-500 mb-3 tracking-widest">Your Comments</label>
-                  <textarea value={feedback} onChange={e => setFeedback(e.target.value)} required rows={4}
+                  <textarea
+                    value={feedback}
+                    onChange={e => setFeedback(e.target.value)}
+                    required
+                    rows={4}
                     placeholder="Tell us about your experience..."
-                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-blue-500 transition-colors text-sm font-medium resize-none" />
+                    className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-blue-500 transition-colors text-sm font-medium resize-none"
+                  />
                 </div>
-                <button type="submit" className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest transition-all active:scale-95">
+                <button
+                  type="submit"
+                  className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest transition-all active:scale-95"
+                >
                   Submit Review
                 </button>
               </form>
             )}
 
-            {/* Reviews list */}
+            {/* Reviews List */}
             <div>
               <h3 className="text-lg font-black mb-5 uppercase tracking-widest border-b border-white/5 pb-4">
-                {dbFeedbacks.length > 0 ? `${dbFeedbacks.length} Review${dbFeedbacks.length > 1 ? 's' : ''}` : 'No Reviews Yet'}
+                {totalFeedbacks.length > 0
+                  ? `${totalFeedbacks.length} Review${totalFeedbacks.length > 1 ? 's' : ''}`
+                  : 'No Reviews Yet'}
               </h3>
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-                {dbFeedbacks.length === 0 ? (
+                {totalFeedbacks.length === 0 ? (
                   <p className="text-gray-600 text-xs font-black uppercase italic">Be the first to leave a review!</p>
                 ) : (
-                  [...dbFeedbacks].reverse().map((f, i) => (
+                  [...totalFeedbacks].reverse().map((f, i) => (
                     <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/5">
                       <div className="flex items-center gap-3 mb-2">
                         <div className="flex text-yellow-400 text-xs">
                           {[...Array(5)].map((_, j) => (
-                            <span key={j} className={j < f.rating ? 'opacity-100' : 'opacity-20'}>★</span>
+                            <span key={j} className={j < f.rating ? 'opacity-100' : 'opacity-20'}>
+                              ★
+                            </span>
                           ))}
                         </div>
                         <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{f.username}</span>

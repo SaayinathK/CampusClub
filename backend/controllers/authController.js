@@ -5,12 +5,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
+const emailUser = process.env.EMAIL_USER || process.env.EMAIL;
+const emailPass = process.env.EMAIL_PASS;
+
 // Set up Nodemailer transporter
 const transporter = nodemailer.createTransport({
     service: 'gmail', // Use your email provider
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: emailUser,
+        pass: emailPass
     }
 });
 
@@ -34,20 +37,33 @@ exports.sendOTP = async (req, res) => {
 
         // Send Email
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: emailUser,
             to: email,
             subject: 'Your Registration OTP Code',
             html: `<p>Your OTP for registration is: <strong>${otpCode}</strong>. It will expire in 5 minutes.</p>`
         };
 
         // If email isn't configured, just log it for testing
-        if (!process.env.EMAIL_USER || process.env.EMAIL_USER === 'your_email@gmail.com') {
+        if (!emailUser || emailUser === 'your_email@gmail.com') {
             console.log(`[DEV MODE] OTP for ${email} is: ${otpCode}`);
             return res.status(200).json({ message: 'OTP stored. Check server console since email is not configured.', devOtp: otpCode });
         }
 
-        await transporter.sendMail(mailOptions);
-        res.status(200).json({ message: 'OTP sent to email successfully' });
+        try {
+            await transporter.sendMail(mailOptions);
+            return res.status(200).json({ message: 'OTP sent to email successfully' });
+        } catch (mailError) {
+            // In local/dev environments, keep signup flow working even when SMTP is misconfigured.
+            if (process.env.NODE_ENV !== 'production') {
+                console.warn('Email delivery failed. Falling back to dev OTP output:', mailError.message);
+                console.log(`[DEV MODE] OTP for ${email} is: ${otpCode}`);
+                return res.status(200).json({
+                    message: 'OTP stored. Email sending failed, so OTP is returned for development use.',
+                    devOtp: otpCode,
+                });
+            }
+            throw mailError;
+        }
 
     } catch (error) {
         console.error('Send OTP error:', error);
@@ -59,6 +75,10 @@ exports.sendOTP = async (req, res) => {
 exports.register = async (req, res) => {
     try {
         const { name, username, email, password, otp, role, itNumber, communityName, communityDescription, communityCategory, requestedCommunity } = req.body;
+        const cleanedItNumber = typeof itNumber === 'string' && itNumber.trim() ? itNumber.trim() : undefined;
+        const cleanedCommunityName = typeof communityName === 'string' && communityName.trim() ? communityName.trim() : undefined;
+        const cleanedCommunityDescription = typeof communityDescription === 'string' && communityDescription.trim() ? communityDescription.trim() : undefined;
+        const cleanedCommunityCategory = typeof communityCategory === 'string' && communityCategory.trim() ? communityCategory.trim() : undefined;
 
         // Verify OTP
         if (!otp) {
@@ -77,6 +97,10 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        if (role === 'student' && !cleanedItNumber) {
+            return res.status(400).json({ message: 'IT number is required for student registration' });
+        }
+
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -92,21 +116,21 @@ exports.register = async (req, res) => {
             password: hashedPassword,
             role: userRole,
             status: userStatus,
-            itNumber,
-            communityName,
-            communityDescription,
-            communityCategory,
+            ...(cleanedItNumber ? { itNumber: cleanedItNumber } : {}),
+            ...(cleanedCommunityName ? { communityName: cleanedCommunityName } : {}),
+            ...(cleanedCommunityDescription ? { communityDescription: cleanedCommunityDescription } : {}),
+            ...(cleanedCommunityCategory ? { communityCategory: cleanedCommunityCategory } : {}),
             ...(userRole === 'student' && requestedCommunity ? { requestedCommunity } : {}),
         });
 
         await newUser.save();
 
         // If community admin, create a pending Community document immediately
-        if (userRole === 'community_admin' && communityName) {
+        if (userRole === 'community_admin' && cleanedCommunityName) {
             const community = await Community.create({
-                name: communityName,
-                description: communityDescription || '',
-                category: communityCategory || 'Other',
+                name: cleanedCommunityName,
+                description: cleanedCommunityDescription || 'Community pending description update',
+                category: cleanedCommunityCategory || 'Other',
                 admin: newUser._id,
                 status: 'pending',
             });
@@ -123,6 +147,10 @@ exports.register = async (req, res) => {
 
         res.status(201).json({ message });
     } catch (error) {
+        if (error?.code === 11000) {
+            const duplicateField = Object.keys(error.keyPattern || {})[0] || 'field';
+            return res.status(400).json({ message: `${duplicateField} already exists` });
+        }
         console.error('Registration error:', error);
         res.status(500).json({ message: 'Server error' });
     }

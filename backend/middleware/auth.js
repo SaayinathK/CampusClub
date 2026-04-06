@@ -1,6 +1,5 @@
 // auth.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 
 // Legacy role mapping for old tokens
 const ROLE_MAP = { community: 'community_admin', sliit: 'student' };
@@ -12,36 +11,23 @@ const ROLE_MAP = { community: 'community_admin', sliit: 'student' };
  * - Fetches user from DB if needed
  * - Attaches minimal user info to req.user
  */
-const protect = async (req, res, next) => {
+const protect = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
 
-    // Verify JWT first — if invalid/expired, fail fast with 401
-    let decoded;
     try {
         const tokenSecret = process.env.JWT_SECRET || 'supersecretkey';
-        decoded = jwt.verify(token, tokenSecret);
-    } catch (err) {
-        return res.status(401).json({ message: 'Token is not valid' });
-    }
+        const decoded = jwt.verify(token, tokenSecret);
 
-    // DB lookup — separate try/catch so a DB timeout returns 503 not 401
-    try {
-        const user = await User.findById(decoded.id).select('-password').lean();
-        if (!user) return res.status(401).json({ message: 'User not found' });
-
-        const normalizedRole = decoded.role ? ROLE_MAP[decoded.role] || decoded.role : ROLE_MAP[user.role] || user.role;
-
-        req.user = {
-            id: user._id,
-            email: user.email,
-            role: normalizedRole,
-        };
+        // Trust the signed JWT — no DB lookup needed on every request.
+        // The token carries id + role, both set at login time and signed with the secret.
+        // This means no DB dependency per request, so nodemon restarts / DB hiccups
+        // never invalidate an otherwise valid session.
+        const normalizedRole = ROLE_MAP[decoded.role] || decoded.role;
+        req.user = { id: decoded.id, role: normalizedRole };
         next();
     } catch (err) {
-        console.error('Auth DB error:', err.message);
-        // DB unavailable — do NOT clear the session, return 503 so frontend keeps cached user
-        return res.status(503).json({ message: 'Service temporarily unavailable' });
+        return res.status(401).json({ message: 'Token is not valid' });
     }
 };
 

@@ -324,4 +324,67 @@ router.delete('/:id/members/:userId', protect, authorize('community_admin', 'adm
   }
 });
 
+// @route   GET /api/communities/feed
+// @desc    Activity feed for a student — events grouped by upcoming / ongoing / completed
+//          from communities the student is a member of
+// @access  Private/Student
+router.get('/feed', protect, authorize('student'), async (req, res) => {
+  try {
+    // Find all approved memberships for this student
+    const memberships = await Membership.find({
+      user: req.user.id,
+      status: 'approved',
+    }).select('community');
+
+    const communityIds = memberships.map(m => m.community);
+
+    if (!communityIds.length) {
+      return res.json({ success: true, data: { upcoming: [], ongoing: [], recentlyCompleted: [] } });
+    }
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [upcoming, ongoing, recentlyCompleted] = await Promise.all([
+      // Upcoming: published, startDate in the future
+      Event.find({
+        community: { $in: communityIds },
+        status: 'published',
+        startDate: { $gt: now },
+      })
+        .populate('community', 'name logo category')
+        .select('title startDate endDate venue isVirtual isFree ticketPrice maxParticipants participants community coverImage category')
+        .sort({ startDate: 1 })
+        .limit(10),
+
+      // Ongoing: published, startDate <= now AND (no endDate OR endDate >= now)
+      Event.find({
+        community: { $in: communityIds },
+        status: 'published',
+        startDate: { $lte: now },
+        $or: [{ endDate: { $gte: now } }, { endDate: null }],
+      })
+        .populate('community', 'name logo category')
+        .select('title startDate endDate venue isVirtual isFree ticketPrice maxParticipants participants community coverImage category')
+        .sort({ startDate: -1 })
+        .limit(5),
+
+      // Recently completed: completed in the last 30 days
+      Event.find({
+        community: { $in: communityIds },
+        status: 'completed',
+        updatedAt: { $gte: thirtyDaysAgo },
+      })
+        .populate('community', 'name logo category')
+        .select('title startDate endDate venue community coverImage category participants')
+        .sort({ updatedAt: -1 })
+        .limit(5),
+    ]);
+
+    res.json({ success: true, data: { upcoming, ongoing, recentlyCompleted } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

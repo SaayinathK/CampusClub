@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 const ROLE_ROUTES = {
   admin: '/admin',
@@ -80,6 +81,7 @@ const Navbar = () => {
                         </div>
                     ) : (
                         <div className="flex items-center gap-6 animate-in fade-in slide-in-from-right-4 duration-700">
+                            <NotificationBell />
                             <Link to={dashboardRoute || '/profile'} className="flex items-center gap-3 group relative px-4 py-2 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all">
                                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
                                     <span className="text-[12px] text-white font-black">{(user.name || user.username || '?')[0].toUpperCase()}</span>

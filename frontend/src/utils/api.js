@@ -20,12 +20,10 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const msg = error.response?.data?.message || '';
 
-    // Only clear session on definitive auth failures — NOT on 503 (DB down) or network errors
+    // Only clear session when the JWT itself is bad — NOT on network/DB errors
     const isDefinitiveAuthFailure = status === 401 && (
       msg.includes('not valid') ||
-      msg.includes('No token') ||
-      msg.includes('not found') ||
-      msg.includes('expired')
+      msg.includes('No token')
     );
 
     if (isDefinitiveAuthFailure) {

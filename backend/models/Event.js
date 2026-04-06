@@ -70,6 +70,9 @@ const EventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Paid event fields
+    isFree: { type: Boolean, default: true },
+    ticketPrice: { type: Number, default: 0 },
     // Registered participants
     participants: [
       {
@@ -77,6 +80,13 @@ const EventSchema = new mongoose.Schema(
         registeredAt: { type: Date, default: Date.now },
         type: { type: String, enum: ['student', 'external'], default: 'student' },
         attended: { type: Boolean, default: false },
+        // Payment tracking (for paid events)
+        paymentStatus: {
+          type: String,
+          enum: ['not_required', 'pending', 'verified', 'rejected'],
+          default: 'not_required',
+        },
+        receiptId: { type: mongoose.Schema.Types.ObjectId, ref: 'Receipt' },
         // For external participants without accounts
         externalName: { type: String },
         externalEmail: { type: String },
@@ -84,6 +94,8 @@ const EventSchema = new mongoose.Schema(
     ],
     tags: [{ type: String }],
     rejectionReason: { type: String, default: '' },
+    // Registration deadline — optional; triggers "closing soon" notification 24h before
+    registrationDeadline: { type: Date },
   },
   { timestamps: true }
 );

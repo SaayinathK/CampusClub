@@ -39,6 +39,7 @@ app.use('/api/communities', require('./routes/communities'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/memberships', require('./routes/memberships'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Serve uploads folder static
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

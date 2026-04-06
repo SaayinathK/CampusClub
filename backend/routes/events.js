@@ -2,7 +2,83 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../models/Event');
 const Community = require('../models/Community');
+const Notification = require('../models/Notification');
 const { protect, authorize } = require('../middleware/auth');
+
+// Helper: create / replace "registration closing" notifications when deadline is set
+async function scheduleRegistrationClosingNotifs(event, community) {
+  if (!event.registrationDeadline || !community || !community.members.length) return;
+
+  const deadline = new Date(event.registrationDeadline);
+  const notifTime = new Date(deadline.getTime() - 24 * 60 * 60 * 1000); // 24h before
+
+  // Only create if the scheduled time is still in the future
+  if (notifTime <= new Date()) return;
+
+  const deadlineLabel = deadline.toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+
+  // Remove any existing registration_closing notifs for this event (re-sync on update)
+  await Notification.deleteMany({ event: event._id, type: 'registration_closing' });
+
+  const notifs = community.members
+    .filter(m => m.status === 'approved')
+    .map(m => ({
+      recipient: m.user,
+      type: 'registration_closing',
+      event: event._id,
+      title: `Registration Closing: ${event.title}`,
+      message: `Registration for "${event.title}" closes on ${deadlineLabel}. Register now before spots run out!`,
+      scheduledFor: notifTime,
+    }));
+
+  if (notifs.length) await Notification.insertMany(notifs);
+}
+
+// Helper: create event published + reminder notifications for all community members
+async function notifyEventPublished(event, community) {
+  if (!community || !community.members.length) return;
+
+  const eventDateLabel = new Date(event.startDate).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+  });
+  const venueLabel = event.venue ? ` at ${event.venue}` : '';
+
+  // Immediate: event is now published
+  const publishedNotifs = community.members.map(m => ({
+    recipient: m.user,
+    type: 'event_published',
+    event: event._id,
+    title: `New Event: ${event.title}`,
+    message: `${community.name} has published a new event "${event.title}" on ${eventDateLabel}${venueLabel}.`,
+    scheduledFor: new Date(),
+  }));
+
+  // Reminder: visible on the day the event starts
+  const reminderDate = new Date(event.startDate);
+  reminderDate.setHours(0, 0, 0, 0);
+  const reminderNotifs = community.members.map(m => ({
+    recipient: m.user,
+    type: 'event_reminder',
+    event: event._id,
+    title: `Today: ${event.title}`,
+    message: `The event "${event.title}" by ${community.name} is happening today${venueLabel}!`,
+    scheduledFor: reminderDate,
+  }));
+
+  // Notify the CA whose event was approved
+  const caNotif = {
+    recipient: event.createdBy,
+    type: 'event_published',
+    event: event._id,
+    title: `Event Approved: ${event.title}`,
+    message: `Your event "${event.title}" has been approved and is now live!`,
+    scheduledFor: new Date(),
+  };
+
+  await Notification.insertMany([...publishedNotifs, ...reminderNotifs, caNotif]);
+}
 
 // @route   GET /api/events
 // @desc    Get all published events (public)
@@ -91,6 +167,40 @@ router.get('/my-community', protect, authorize('community_admin'), async (req, r
   }
 });
 
+// @route   GET /api/events/my-registrations
+// @desc    Get all events the current student is registered for
+// @access  Private/Student
+router.get('/my-registrations', protect, authorize('student'), async (req, res) => {
+  try {
+    const events = await Event.find({ 'participants.user': req.user.id })
+      .populate('community', 'name logo category')
+      .select('title startDate endDate venue status category coverImage isFree ticketPrice participants community')
+      .sort({ startDate: -1 });
+
+    const result = events.map((ev) => {
+      const myParticipant = ev.participants.find((p) => p.user && p.user.toString() === req.user.id);
+      return {
+        _id: ev._id,
+        title: ev.title,
+        startDate: ev.startDate,
+        endDate: ev.endDate,
+        venue: ev.venue,
+        status: ev.status,
+        category: ev.category,
+        coverImage: ev.coverImage,
+        isFree: ev.isFree,
+        ticketPrice: ev.ticketPrice,
+        community: ev.community,
+        participant: myParticipant,
+      };
+    });
+
+    res.json({ success: true, count: result.length, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // @route   GET /api/events/:id
 // @desc    Get single event
 // @access  Public (published only for public, all for auth users)
@@ -123,16 +233,21 @@ router.post('/', protect, authorize('community_admin'), async (req, res) => {
       allowExternal, tags, coverImage
     } = req.body;
 
+    const { registrationDeadline } = req.body;
+
     const event = await Event.create({
       title, description, category, startDate, endDate,
       venue, isVirtual, virtualLink, maxParticipants,
-      allowExternal, tags, coverImage,
+      allowExternal, tags, coverImage, registrationDeadline,
       community: community._id,
       createdBy: req.user.id,
-      status: 'pending_approval', // always requires admin approval before going live
+      status: 'pending_approval',
     });
 
-    // Events are linked via Event.community — no need to push IDs onto the Community document.
+    // Schedule registration_closing notifications if deadline is set
+    if (registrationDeadline) {
+      await scheduleRegistrationClosingNotifs(event, community);
+    }
 
     res.status(201).json({ success: true, data: event });
   } catch (error) {
@@ -152,8 +267,11 @@ router.put('/:id', protect, authorize('community_admin', 'admin'), async (req, r
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    const updatable = ['title', 'description', 'category', 'startDate', 'endDate', 'venue',
-      'isVirtual', 'virtualLink', 'maxParticipants', 'allowExternal', 'tags', 'coverImage'];
+    const updatable = [
+      'title', 'description', 'category', 'startDate', 'endDate', 'venue',
+      'isVirtual', 'virtualLink', 'maxParticipants', 'allowExternal', 'tags',
+      'coverImage', 'isFree', 'ticketPrice', 'registrationDeadline',
+    ];
 
     updatable.forEach((field) => {
       if (req.body[field] !== undefined) event[field] = req.body[field];
@@ -166,6 +284,12 @@ router.put('/:id', protect, authorize('community_admin', 'admin'), async (req, r
     }
 
     await event.save();
+
+    // Re-schedule registration_closing notifications if deadline changed
+    if (req.body.registrationDeadline !== undefined) {
+      const community = await Community.findById(event.community).populate('members.user', '_id');
+      await scheduleRegistrationClosingNotifs(event, community);
+    }
 
     res.json({ success: true, data: event });
   } catch (error) {
@@ -190,18 +314,10 @@ router.put('/:id/status', protect, authorize('community_admin', 'admin'), async 
       draft: ['pending_approval', 'cancelled'],
     };
 
-    // Admin has full control
-    const adminTransitions = {
-      pending_approval: ['published', 'rejected'],
-      published: ['completed', 'cancelled'],
-      rejected: ['pending_approval'],
-      completed: [],
-      cancelled: ['pending_approval'],
-      draft: ['pending_approval', 'published', 'cancelled'],
-    };
+    if (!status) return res.status(400).json({ success: false, message: 'Status is required' });
 
     const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
+    if (!event) return res.status(404).json({ success: false, message: 'Event not found — it may have been deleted. Please refresh the page.' });
 
     if (req.user.role === 'community_admin' && event.createdBy.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
@@ -213,13 +329,29 @@ router.put('/:id/status', protect, authorize('community_admin', 'admin'), async 
       if (!allowed.includes(status)) {
         return res.status(400).json({
           success: false,
-          message: `Cannot transition from '${event.status}' to '${status}'`,
+          message: `This event is currently "${event.status}" and cannot be changed to "${status}". Please refresh the page.`,
         });
       }
     }
 
     event.status = status;
     await event.save();
+
+    // If cancelled, notify all registered student participants
+    if (status === 'cancelled' && event.participants.length > 0) {
+      const studentParticipants = event.participants.filter(p => p.user);
+      if (studentParticipants.length > 0) {
+        const cancelNotifs = studentParticipants.map(p => ({
+          recipient: p.user,
+          type: 'event_cancelled',
+          event: event._id,
+          title: `Event Cancelled: ${event.title}`,
+          message: `Unfortunately, the event "${event.title}" has been cancelled. We're sorry for the inconvenience.`,
+          scheduledFor: new Date(),
+        }));
+        await Notification.insertMany(cancelNotifs);
+      }
+    }
 
     res.json({ success: true, message: `Event status updated to '${status}'`, data: event });
   } catch (error) {
@@ -241,6 +373,10 @@ router.put('/:id/approve', protect, authorize('admin'), async (req, res) => {
 
     event.status = 'published';
     await event.save();
+
+    // Notify community members + CA
+    const community = await Community.findById(event.community);
+    await notifyEventPublished(event, community);
 
     res.json({ success: true, message: 'Event approved and published', data: event });
   } catch (error) {
@@ -264,6 +400,16 @@ router.put('/:id/reject', protect, authorize('admin'), async (req, res) => {
     event.status = 'rejected';
     if (reason) event.rejectionReason = reason;
     await event.save();
+
+    // Notify the CA
+    await Notification.create({
+      recipient: event.createdBy,
+      type: 'event_rejected',
+      event: event._id,
+      title: `Event Rejected: ${event.title}`,
+      message: `Your event "${event.title}" was rejected.${reason ? ` Reason: ${reason}` : ''} You can edit and re-submit it.`,
+      scheduledFor: new Date(),
+    });
 
     res.json({ success: true, message: 'Event rejected', data: event });
   } catch (error) {
@@ -317,6 +463,40 @@ router.post('/join/:code', async (req, res) => {
   }
 });
 
+// @route   GET /api/events/my-registrations
+// @desc    Get all events the current student is registered for
+// @access  Private/Student
+router.get('/my-registrations', protect, authorize('student'), async (req, res) => {
+  try {
+    const events = await Event.find({ 'participants.user': req.user.id })
+      .populate('community', 'name logo category')
+      .select('title startDate endDate venue status category coverImage isFree ticketPrice participants community')
+      .sort({ startDate: -1 });
+
+    const result = events.map((ev) => {
+      const myParticipant = ev.participants.find((p) => p.user && p.user.toString() === req.user.id);
+      return {
+        _id: ev._id,
+        title: ev.title,
+        startDate: ev.startDate,
+        endDate: ev.endDate,
+        venue: ev.venue,
+        status: ev.status,
+        category: ev.category,
+        coverImage: ev.coverImage,
+        isFree: ev.isFree,
+        ticketPrice: ev.ticketPrice,
+        community: ev.community,
+        participant: myParticipant,
+      };
+    });
+
+    res.json({ success: true, count: result.length, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // @route   POST /api/events/:id/register
 // @desc    Student registers for an event
 // @access  Private/Student
@@ -333,10 +513,96 @@ router.post('/:id/register', protect, authorize('student'), async (req, res) => 
       return res.status(400).json({ success: false, message: 'Event is full' });
     }
 
-    event.participants.push({ user: req.user.id, type: 'student' });
+    const paymentStatus = event.isFree ? 'not_required' : 'pending';
+    event.participants.push({ user: req.user.id, type: 'student', paymentStatus });
     await event.save();
 
-    res.json({ success: true, message: 'Successfully registered for the event!' });
+    // Notify the student that their registration is confirmed
+    const eventDateLabel = new Date(event.startDate).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+    });
+    await Notification.create({
+      recipient: req.user.id,
+      type: 'registration_confirmed',
+      event: event._id,
+      title: `Registered: ${event.title}`,
+      message: event.isFree
+        ? `You're registered for "${event.title}" on ${eventDateLabel}. See you there!`
+        : `You're registered for "${event.title}" on ${eventDateLabel}. Please upload your payment receipt to confirm your spot.`,
+      scheduledFor: new Date(),
+    });
+
+    res.json({
+      success: true,
+      message: event.isFree
+        ? 'Successfully registered for the event!'
+        : 'Registered! Please upload your payment receipt to confirm your spot.',
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   DELETE /api/events/:id/register
+// @desc    Student unregisters from an event
+// @access  Private/Student
+router.delete('/:id/register', protect, authorize('student'), async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
+    if (event.status !== 'published') {
+      return res.status(400).json({ success: false, message: 'Cannot unregister from this event' });
+    }
+
+    const participantIndex = event.participants.findIndex(
+      (p) => p.user && p.user.toString() === req.user.id
+    );
+    if (participantIndex === -1) {
+      return res.status(400).json({ success: false, message: 'You are not registered for this event' });
+    }
+
+    event.participants.splice(participantIndex, 1);
+    await event.save();
+
+    res.json({ success: true, message: 'Successfully unregistered from the event.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   GET /api/events/:id/export
+// @desc    Export participant/registration data as CSV
+// @access  Private/Community Admin or Admin
+router.get('/:id/export', protect, authorize('community_admin', 'admin'), async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id)
+      .populate('participants.user', 'name email itNumber');
+
+    if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
+
+    const rows = [
+      ['#', 'Name', 'Email', 'IT Number', 'Type', 'Registered At', 'Attended', 'Payment Status'],
+    ];
+
+    event.participants.forEach((p, i) => {
+      rows.push([
+        i + 1,
+        p.user ? p.user.name : (p.externalName || 'External'),
+        p.user ? p.user.email : (p.externalEmail || ''),
+        p.user ? (p.user.itNumber || '') : '',
+        p.type,
+        new Date(p.registeredAt).toLocaleDateString('en-US'),
+        p.attended ? 'Yes' : 'No',
+        p.paymentStatus || 'not_required',
+      ]);
+    });
+
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const filename = `${event.title.replace(/[^a-z0-9]/gi, '_')}_registrations.csv`;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csv);
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -351,6 +617,54 @@ router.get('/:id/participants', protect, authorize('community_admin', 'admin'), 
     if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
 
     res.json({ success: true, count: event.participants.length, data: event.participants });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   PUT /api/events/:id/attendance
+// @desc    Mark attendance for one or many participants (toggle attended flag)
+// @access  Private/Community Admin or Admin
+router.put('/:id/attendance', protect, authorize('community_admin', 'admin'), async (req, res) => {
+  try {
+    const { participantId, attended } = req.body;
+    // participantId = the _id of the participants subdocument
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
+
+    if (req.user.role === 'community_admin' && event.createdBy.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const participant = event.participants.id(participantId);
+    if (!participant) return res.status(404).json({ success: false, message: 'Participant not found' });
+
+    participant.attended = attended;
+    await event.save();
+
+    res.json({ success: true, message: `Attendance ${attended ? 'marked' : 'unmarked'}` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   PUT /api/events/:id/attendance/bulk
+// @desc    Bulk mark/unmark attendance for all participants
+// @access  Private/Community Admin or Admin
+router.put('/:id/attendance/bulk', protect, authorize('community_admin', 'admin'), async (req, res) => {
+  try {
+    const { attended } = req.body; // true = mark all present, false = mark all absent
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ success: false, message: 'Event not found' });
+
+    if (req.user.role === 'community_admin' && event.createdBy.toString() !== req.user.id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    event.participants.forEach(p => { p.attended = attended; });
+    await event.save();
+
+    res.json({ success: true, message: `All participants marked as ${attended ? 'present' : 'absent'}` });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

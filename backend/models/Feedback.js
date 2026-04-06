@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const feedbackSchema = new mongoose.Schema({
     eventId: {
-        type: Number,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Event',
         required: true,
     },
     rating: {

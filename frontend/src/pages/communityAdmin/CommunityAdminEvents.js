@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { QRCodeSVG } from 'qrcode.react';
 import api from '../../utils/api';
 
 const CATEGORIES = ['Technology', 'Arts', 'Sports', 'Academic', 'Cultural', 'Business', 'Science', 'Social', 'Other'];
@@ -15,6 +16,20 @@ const EMPTY_FORM = {
   title: '', description: '', category: 'Technology', startDate: '', endDate: '',
   venue: '', isVirtual: false, virtualLink: '', maxParticipants: '',
   allowExternal: false, tags: '', coverImage: '',
+  isFree: true, ticketPrice: '', registrationDeadline: '',
+};
+
+const PAYMENT_STATUS_COLORS = {
+  not_required: 'emerald',
+  pending: 'amber',
+  verified: 'emerald',
+  rejected: 'rose',
+};
+const PAYMENT_STATUS_LABELS = {
+  not_required: 'Free',
+  pending: 'Pending',
+  verified: 'Verified',
+  rejected: 'Rejected',
 };
 
 export default function CommunityAdminEvents() {
@@ -27,7 +42,12 @@ export default function CommunityAdminEvents() {
   const [saving, setSaving] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [participants, setParticipants] = useState([]);
+  const [attendanceEvent, setAttendanceEvent] = useState(null);
+  const [attendanceList, setAttendanceList] = useState([]);
+  const [attendanceSaving, setAttendanceSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
+  const [qrScanInput, setQrScanInput] = useState('');
+  const [showQR, setShowQR] = useState({});
 
   const fetchData = async () => {
     setLoading(true);
@@ -55,8 +75,45 @@ export default function CommunityAdminEvents() {
       venue: ev.venue || '', isVirtual: ev.isVirtual, virtualLink: ev.virtualLink || '',
       maxParticipants: ev.maxParticipants || '', allowExternal: ev.allowExternal,
       tags: ev.tags?.join(', ') || '', coverImage: ev.coverImage || '',
+      isFree: ev.isFree !== false, ticketPrice: ev.ticketPrice || '',
+      registrationDeadline: ev.registrationDeadline?.split('T')[0] || '',
     });
     setShowModal(true);
+  };
+
+  const handleExport = (eventId, eventTitle) => {
+    const token = localStorage.getItem('token');
+    const link = document.createElement('a');
+    link.href = `http://localhost:5000/api/events/${eventId}/export`;
+    // Attach token via a temp fetch approach
+    fetch(`http://localhost:5000/api/events/${eventId}/export`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `${eventTitle.replace(/[^a-z0-9]/gi, '_')}_registrations.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+      })
+      .catch(() => toast.error('Export failed'));
+  };
+
+  const handleQrScan = (e) => {
+    if (e.key !== 'Enter') return;
+    const code = qrScanInput.trim();
+    if (!code) return;
+    const participant = attendanceList.find(p => p._id === code);
+    if (!participant) {
+      toast.error('Participant not found for this QR code');
+    } else if (participant.attended) {
+      toast.info(`${participant.user?.name || participant.externalName} is already marked present`);
+    } else {
+      toggleAttendance(participant._id, true);
+      toast.success(`Marked present: ${participant.user?.name || participant.externalName}`);
+    }
+    setQrScanInput('');
   };
 
   const handleSave = async (e) => {
@@ -67,6 +124,7 @@ export default function CommunityAdminEvents() {
         ...form,
         tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
         maxParticipants: form.maxParticipants ? parseInt(form.maxParticipants) : undefined,
+        ticketPrice: !form.isFree && form.ticketPrice ? parseFloat(form.ticketPrice) : 0,
       };
       if (editingEvent) {
         await api.put(`/events/${editingEvent._id}`, payload);
@@ -109,6 +167,31 @@ export default function CommunityAdminEvents() {
       const res = await api.get(`/events/${ev._id}/participants`);
       setParticipants(res.data.data || []);
     } catch { setParticipants([]); }
+  };
+
+  const openAttendance = async (ev) => {
+    setAttendanceEvent(ev);
+    try {
+      const res = await api.get(`/events/${ev._id}/participants`);
+      setAttendanceList(res.data.data || []);
+    } catch { setAttendanceList([]); }
+  };
+
+  const toggleAttendance = async (participantId, attended) => {
+    try {
+      await api.put(`/events/${attendanceEvent._id}/attendance`, { participantId, attended });
+      setAttendanceList(prev => prev.map(p => p._id === participantId ? { ...p, attended } : p));
+    } catch { toast.error('Failed to update attendance'); }
+  };
+
+  const bulkAttendance = async (attended) => {
+    setAttendanceSaving(true);
+    try {
+      await api.put(`/events/${attendanceEvent._id}/attendance/bulk`, { attended });
+      setAttendanceList(prev => prev.map(p => ({ ...p, attended })));
+      toast.success(attended ? 'All marked present' : 'All marked absent');
+    } catch { toast.error('Failed'); }
+    finally { setAttendanceSaving(false); }
   };
 
   const filteredEvents = statusFilter ? events.filter(e => e.status === statusFilter) : events;
@@ -269,6 +352,16 @@ export default function CommunityAdminEvents() {
                              <button onClick={() => viewParticipants(ev)} className="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-colors">
                                👥 Guest List
                              </button>
+                             {['published', 'completed'].includes(ev.status) && (
+                               <>
+                               <button onClick={() => openAttendance(ev)} className="flex-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 font-bold text-xs uppercase tracking-widest text-emerald-400 hover:bg-emerald-500/20 transition-colors">
+                                 ✅ Attendance
+                               </button>
+                               <button onClick={() => handleExport(ev._id, ev.title)} className="py-2 px-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 font-bold text-xs uppercase tracking-widest text-cyan-400 hover:bg-cyan-500/20 transition-colors" title="Export to CSV">
+                                 ⬇
+                               </button>
+                               </>
+                             )}
                              {['pending_approval', 'rejected', 'draft', 'cancelled'].includes(ev.status) && (
                                <button onClick={() => openEdit(ev)} className="flex-[0.5] py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 font-bold text-xs uppercase tracking-widest text-cyan-400 hover:bg-cyan-500/20 transition-colors">
                                  ✏️ Edit
@@ -364,6 +457,42 @@ export default function CommunityAdminEvents() {
                     </div>
                  </div>
 
+                 <div className="space-y-2 group">
+                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                     <span>⌛</span> Registration Deadline
+                     <span className="text-slate-600 normal-case font-normal">(optional — triggers "closing soon" reminder 24h before)</span>
+                   </label>
+                   <input
+                     type="date"
+                     value={form.registrationDeadline}
+                     onChange={e => set('registrationDeadline', e.target.value)}
+                     className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all [color-scheme:dark]"
+                   />
+                 </div>
+
+                 {/* Paid / Free toggle */}
+                 <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-4">
+                   <label className="flex items-center gap-3 cursor-pointer group">
+                     <input type="checkbox" checked={!form.isFree} onChange={e => set('isFree', !e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-black/50 text-yellow-500 focus:ring-yellow-500 focus:ring-offset-slate-900" />
+                     <span className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">💳 Paid Event</span>
+                   </label>
+                   {!form.isFree && (
+                     <div className="space-y-2 pl-8">
+                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ticket Price (LKR)</label>
+                       <input
+                         type="number"
+                         min="0"
+                         step="0.01"
+                         value={form.ticketPrice}
+                         onChange={e => set('ticketPrice', e.target.value)}
+                         required
+                         className="w-full bg-black/40 border border-yellow-500/20 rounded-xl px-4 py-3 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
+                         placeholder="E.g. 500"
+                       />
+                     </div>
+                   )}
+                 </div>
+
                  <div className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
                     <label className="flex items-center gap-3 cursor-pointer group">
                        <input type="checkbox" checked={form.isVirtual} onChange={e => set('isVirtual', e.target.checked)} className="w-5 h-5 rounded border-white/20 bg-black/50 text-cyan-500 focus:ring-cyan-500 focus:ring-offset-slate-900" />
@@ -394,6 +523,121 @@ export default function CommunityAdminEvents() {
          </div>
       )}
 
+      {/* Attendance Modal */}
+      {attendanceEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={e => e.target === e.currentTarget && setAttendanceEvent(null)}>
+          <div className="bg-[#0f172a] border border-white/10 rounded-3xl w-full max-w-lg max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+
+            <div className="p-6 border-b border-white/5 bg-[#0f172a]/90 backdrop-blur-xl flex justify-between items-start sticky top-0">
+              <div>
+                <h3 className="text-xl font-black text-white flex items-center gap-2 mb-1">✅ ATTENDANCE</h3>
+                <p className="text-sm text-slate-400 font-medium truncate max-w-[280px]">{attendanceEvent.title}</p>
+              </div>
+              <button onClick={() => setAttendanceEvent(null)} className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-rose-500 transition-colors">✕</button>
+            </div>
+
+            {/* Stats bar */}
+            <div className="grid grid-cols-3 border-b border-white/5 divide-x divide-white/5 text-center">
+              <div className="py-3">
+                <div className="text-xl font-black text-white">{attendanceList.length}</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest">Total</div>
+              </div>
+              <div className="py-3">
+                <div className="text-xl font-black text-emerald-400">{attendanceList.filter(p => p.attended).length}</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest">Present</div>
+              </div>
+              <div className="py-3">
+                <div className="text-xl font-black text-rose-400">{attendanceList.filter(p => !p.attended).length}</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest">Absent</div>
+              </div>
+            </div>
+
+            {/* QR Scanner input */}
+            <div className="p-3 border-b border-white/5 bg-purple-500/5">
+              <input
+                type="text"
+                value={qrScanInput}
+                onChange={e => setQrScanInput(e.target.value)}
+                onKeyDown={handleQrScan}
+                placeholder="📷 Scan QR code here (press Enter to mark present)"
+                className="w-full bg-black/40 border border-purple-500/30 rounded-xl px-4 py-2 text-white text-xs font-mono focus:outline-none focus:border-purple-400 placeholder:text-slate-500"
+              />
+            </div>
+
+            {/* Bulk actions */}
+            <div className="flex gap-2 p-3 border-b border-white/5 bg-black/20">
+              <button disabled={attendanceSaving} onClick={() => bulkAttendance(true)} className="flex-1 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-xs uppercase tracking-widest hover:bg-emerald-500/20 transition-colors disabled:opacity-50">
+                ✓ Mark All Present
+              </button>
+              <button disabled={attendanceSaving} onClick={() => bulkAttendance(false)} className="flex-1 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-xs uppercase tracking-widest hover:bg-rose-500/20 transition-colors disabled:opacity-50">
+                ✗ Mark All Absent
+              </button>
+              <button onClick={() => handleExport(attendanceEvent._id, attendanceEvent.title)} className="py-2 px-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold text-xs uppercase tracking-widest hover:bg-cyan-500/20 transition-colors" title="Export CSV">
+                ⬇ CSV
+              </button>
+            </div>
+
+            <div className="overflow-y-auto p-4 flex flex-col gap-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {attendanceList.length === 0 ? (
+                <div className="py-12 text-center text-slate-500">
+                  <div className="text-4xl mb-4 opacity-50">👻</div>
+                  <p className="text-sm font-bold text-white mb-1">No participants</p>
+                  <p className="text-xs">No one has registered for this event yet.</p>
+                </div>
+              ) : (
+                attendanceList.map(p => (
+                  <div key={p._id} className={`p-4 rounded-2xl border transition-colors ${p.attended ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-white/5 border-white/5'}`}>
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0 ${p.attended ? 'bg-emerald-500/20 border border-emerald-500/30' : 'bg-white/10 border border-white/10'}`}>
+                        {(p.user?.name || p.externalName)?.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white text-sm truncate">{p.user?.name || p.externalName}</p>
+                        <p className="text-xs text-slate-400 truncate">{p.user?.email || p.externalEmail}</p>
+                        {p.user?.itNumber && <p className="text-[10px] font-mono text-cyan-400 mt-0.5">{p.user.itNumber}</p>}
+                        {p.paymentStatus && p.paymentStatus !== 'not_required' && (
+                          <span className={`inline-block mt-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-${PAYMENT_STATUS_COLORS[p.paymentStatus]}-500/10 text-${PAYMENT_STATUS_COLORS[p.paymentStatus]}-400 border-${PAYMENT_STATUS_COLORS[p.paymentStatus]}-500/20`}>
+                            💳 {PAYMENT_STATUS_LABELS[p.paymentStatus]}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => setShowQR(prev => ({ ...prev, [p._id]: !prev[p._id] }))}
+                          className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs flex items-center justify-center hover:bg-purple-500/20 transition-colors"
+                          title="Show QR code"
+                        >
+                          QR
+                        </button>
+                        <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border ${p.type === 'external' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'}`}>
+                          {p.type}
+                        </span>
+                        <button
+                          onClick={() => toggleAttendance(p._id, !p.attended)}
+                          className={`w-9 h-9 rounded-xl border font-bold text-sm transition-all hover:scale-105 ${p.attended ? 'bg-emerald-500 border-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.4)]' : 'bg-white/5 border-white/10 text-slate-400 hover:border-emerald-500/50 hover:text-emerald-400'}`}
+                          title={p.attended ? 'Mark absent' : 'Mark present'}
+                        >
+                          {p.attended ? '✓' : '○'}
+                        </button>
+                      </div>
+                    </div>
+                    {showQR[p._id] && (
+                      <div className="mt-3 flex items-center gap-4 p-3 bg-white rounded-2xl w-fit">
+                        <QRCodeSVG value={p._id} size={80} />
+                        <div>
+                          <p className="text-[9px] font-black uppercase text-slate-700 tracking-widest mb-1">Participant QR</p>
+                          <p className="text-[8px] font-mono text-slate-500 break-all max-w-[140px]">{p._id}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Participants Modal */}
       {selectedEvent && (
          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={e => e.target === e.currentTarget && setSelectedEvent(null)}>
@@ -409,7 +653,15 @@ export default function CommunityAdminEvents() {
 
                <div className="bg-cyan-500/10 border-b border-cyan-500/20 p-4 flex justify-between items-center text-cyan-400">
                   <span className="font-bold text-sm uppercase tracking-wider">Total Confirmed</span>
-                  <span className="text-2xl font-black">{participants.length}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-black">{participants.length}</span>
+                    <button
+                      onClick={() => handleExport(selectedEvent._id, selectedEvent.title)}
+                      className="px-3 py-1.5 rounded-xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-black text-[10px] uppercase tracking-widest hover:bg-cyan-500/30 transition-colors"
+                    >
+                      ⬇ Export CSV
+                    </button>
+                  </div>
                </div>
                
                <div className="overflow-y-auto p-4 flex flex-col gap-2 relative">
@@ -428,12 +680,20 @@ export default function CommunityAdminEvents() {
                            <div className="flex-1 min-w-0">
                               <h5 className="font-bold text-white text-sm truncate">{p.user?.name || p.externalName}</h5>
                               <p className="text-xs text-slate-400 truncate">{p.user?.email || p.externalEmail}</p>
+                              {p.user?.itNumber && <p className="text-[10px] font-mono text-cyan-400 mt-0.5">{p.user.itNumber}</p>}
                            </div>
+                           <div className="flex items-center gap-2 shrink-0">
+                           {p.paymentStatus && p.paymentStatus !== 'not_required' && (
+                             <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded border bg-${PAYMENT_STATUS_COLORS[p.paymentStatus]}-500/10 text-${PAYMENT_STATUS_COLORS[p.paymentStatus]}-400 border-${PAYMENT_STATUS_COLORS[p.paymentStatus]}-500/20`}>
+                               💳 {PAYMENT_STATUS_LABELS[p.paymentStatus]}
+                             </span>
+                           )}
                            <div className={`px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest border ${
-                              p.type === 'member' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 
-                              p.type === 'external' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 
+                              p.type === 'member' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                              p.type === 'external' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' :
                               'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
                               {p.type}
+                           </div>
                            </div>
                         </div>
                      ))

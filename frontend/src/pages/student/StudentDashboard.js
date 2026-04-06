@@ -1,24 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import CommunityFeed from '../../components/CommunityFeed';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
   const [memberships, setMemberships] = useState([]);
   const [events, setEvents] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [mRes, eRes] = await Promise.all([
+        const [mRes, eRes, rRes] = await Promise.all([
           api.get('/memberships/my'),
           api.get('/events?status=published&limit=6'),
+          api.get('/events/my-registrations'),
         ]);
         setMemberships(mRes.data.data || []);
         setEvents(eRes.data.data || []);
+        setRegistrations(rRes.data.data || []);
       } catch { toast.error('Failed to load data'); }
       finally { setLoading(false); }
     };
@@ -73,12 +77,12 @@ export default function StudentDashboard() {
         {/* Floating Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: 'Active Communities', value: approved.length, icon: '🏛️', color: 'from-purple-500/20 to-purple-600/5', border: 'group-hover:border-purple-500/50', text: 'text-purple-400', desc: "You're a member of" },
-            { label: 'Pending Requests', value: pending.length, icon: '⏳', color: 'from-amber-500/20 to-amber-600/5', border: 'group-hover:border-amber-500/50', text: 'text-amber-400', desc: 'Awaiting approval' },
-            { label: 'Upcoming Events', value: events.length, icon: '📅', color: 'from-cyan-500/20 to-cyan-600/5', border: 'group-hover:border-cyan-500/50', text: 'text-cyan-400', desc: 'Happening soon' },
-            { label: 'Member Since', value: new Date(user?.createdAt || Date.now()).getFullYear(), icon: '🎓', color: 'from-emerald-500/20 to-emerald-600/5', border: 'group-hover:border-emerald-500/50', text: 'text-emerald-400', desc: 'Active student' },
+            { label: 'Active Communities', value: approved.length, icon: '🏛️', color: 'from-purple-500/20 to-purple-600/5', border: 'group-hover:border-purple-500/50', text: 'text-purple-400', desc: "You're a member of", link: null },
+            { label: 'Pending Requests', value: pending.length, icon: '⏳', color: 'from-amber-500/20 to-amber-600/5', border: 'group-hover:border-amber-500/50', text: 'text-amber-400', desc: 'Awaiting approval', link: null },
+            { label: 'My Registrations', value: registrations.length, icon: '📋', color: 'from-cyan-500/20 to-cyan-600/5', border: 'group-hover:border-cyan-500/50', text: 'text-cyan-400', desc: 'Events registered', link: '/student/registrations' },
+            { label: 'Member Since', value: new Date(user?.createdAt || Date.now()).getFullYear(), icon: '🎓', color: 'from-emerald-500/20 to-emerald-600/5', border: 'group-hover:border-emerald-500/50', text: 'text-emerald-400', desc: 'Active student', link: null },
           ].map((s, i) => (
-            <div key={i} className={`group glass-dark p-6 rounded-3xl border border-white/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)] cursor-pointer overflow-hidden relative ${s.border}`}>
+            <Link key={i} to={s.link || '#'} className={`group glass-dark p-6 rounded-3xl border border-white/5 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_15px_30px_rgba(0,0,0,0.5)] cursor-pointer overflow-hidden relative ${s.border} ${!s.link ? 'pointer-events-none' : ''}`}>
               <div className={`absolute inset-0 bg-gradient-to-br ${s.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
               <div className="relative z-10 flex justify-between items-start mb-4">
                 <span className="text-4xl filter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)] group-hover:scale-110 transition-transform duration-300">{s.icon}</span>
@@ -88,7 +92,7 @@ export default function StudentDashboard() {
                 <div className="font-bold text-lg mb-1 tracking-wide">{s.label}</div>
                 <div className="text-sm text-slate-400">{s.desc}</div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -185,6 +189,9 @@ export default function StudentDashboard() {
 
         </div>
 
+        {/* Community Activity Feed */}
+        <CommunityFeed />
+
         {/* Quick Actions Footer */}
         <div className="glass-dark rounded-3xl p-8 border border-white/10 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 to-transparent pointer-events-none" />
@@ -193,10 +200,10 @@ export default function StudentDashboard() {
           </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
             {[
-              { icon: '🏛️', label: 'Find Clubs', link: '/clubs', bg: 'hover:bg-cyan-500/20', text: 'group-hover:text-cyan-400' },
-              { icon: '📅', label: 'Browse Events', link: '/events', bg: 'hover:bg-purple-500/20', text: 'group-hover:text-purple-400' },
-              { icon: '👥', label: 'My Network', link: '/student/network', bg: 'hover:bg-emerald-500/20', text: 'group-hover:text-emerald-400' },
-              { icon: '⚙️', label: 'Settings', link: '/student/profile', bg: 'hover:bg-amber-500/20', text: 'group-hover:text-amber-400' },
+              { icon: '🏛️', label: 'Find Clubs',        link: '/clubs',                    bg: 'hover:bg-cyan-500/20',    text: 'group-hover:text-cyan-400' },
+              { icon: '📅', label: 'Browse Events',      link: '/events',                   bg: 'hover:bg-purple-500/20',  text: 'group-hover:text-purple-400' },
+              { icon: '📋', label: 'My Registrations',   link: '/student/registrations',    bg: 'hover:bg-emerald-500/20', text: 'group-hover:text-emerald-400' },
+              { icon: '🔔', label: 'Notifications',      link: '/student/notifications',    bg: 'hover:bg-yellow-500/20',  text: 'group-hover:text-yellow-400' },
             ].map((action, idx) => (
               <Link key={idx} to={action.link} className={`group flex flex-col items-center justify-center p-6 rounded-2xl bg-white/5 border border-white/5 hover:border-white/20 transition-all duration-300 ${action.bg}`}>
                 <span className="text-3xl mb-3 group-hover:scale-125 transition-transform duration-300 drop-shadow-lg">{action.icon}</span>

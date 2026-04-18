@@ -18,7 +18,7 @@ function EventCard({ event, badge, badgeColor }) {
   return (
     <Link
       to={`/events/${event._id}`}
-      className="group flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/20 hover:bg-white/10 transition-all duration-300 hover:-translate-y-0.5"
+      className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-cyan-300/30 hover:bg-slate-50 transition-all duration-300 hover:-translate-y-0.5"
     >
       {/* Category icon */}
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 bg-${badgeColor}-500/10 border border-${badgeColor}-500/20 group-hover:scale-105 transition-transform`}>
@@ -36,7 +36,7 @@ function EventCard({ event, badge, badgeColor }) {
             </span>
           )}
         </div>
-        <h4 className="font-bold text-sm text-white group-hover:text-cyan-400 transition-colors truncate">
+        <h4 className="font-bold text-sm text-slate-900 group-hover:text-cyan-600 transition-colors truncate">
           {event.title}
         </h4>
         <div className="flex flex-wrap gap-3 mt-1 text-[10px] text-slate-400 font-medium">
@@ -51,7 +51,7 @@ function EventCard({ event, badge, badgeColor }) {
         </div>
       </div>
 
-      <span className="text-slate-600 group-hover:text-slate-400 text-lg shrink-0 transition-colors">›</span>
+      <span className="text-slate-500 group-hover:text-slate-700 text-lg shrink-0 transition-colors">›</span>
     </Link>
   );
 }
@@ -118,7 +118,7 @@ export default function CommunityFeed() {
   const active = tabs.find(t => t.key === activeTab);
 
   return (
-    <div className="glass-dark rounded-3xl p-6 md:p-8 border border-white/5 flex flex-col relative overflow-hidden">
+    <div className="glass-dark rounded-3xl p-6 md:p-8 border border-slate-200 flex flex-col relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full mix-blend-screen filter blur-[80px] pointer-events-none" />
 
       <div className="flex justify-between items-end mb-6 relative z-10">
@@ -127,32 +127,32 @@ export default function CommunityFeed() {
             <span className="p-2 bg-cyan-500/10 rounded-xl text-cyan-400">📡</span>
             What's Happening
           </h3>
-          <p className="text-slate-400 text-sm font-medium">
+          <p className="text-slate-500 text-sm font-medium">
             {loading ? 'Loading...' : total === 0 ? 'Join communities to see their events here' : `Activity from your communities`}
           </p>
         </div>
-        <Link to="/events" className="text-sm font-bold text-cyan-400 bg-cyan-500/10 px-4 py-2 rounded-full hover:bg-cyan-500/20 transition-colors shrink-0">
+        <Link to="/events" className="text-sm font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-4 py-2 rounded-full hover:bg-cyan-100 transition-colors shrink-0">
           All Events →
         </Link>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-white/5 rounded-xl p-1 relative z-10">
+      <div className="flex gap-1 mb-5 bg-slate-100 rounded-xl p-1 relative z-10">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${
               activeTab === tab.key
-                ? `bg-${tab.color}-500/20 text-${tab.color}-400 shadow-inner border border-${tab.color}-500/20`
-                : 'text-slate-500 hover:text-white hover:bg-white/5'
+                ? `bg-${tab.color}-100 text-${tab.color}-700 shadow-inner border border-${tab.color}-200`
+                : 'text-slate-500 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <span>{tab.icon}</span>
             <span className="hidden sm:inline">{tab.label}</span>
             {tab.events.length > 0 && (
               <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${
-                activeTab === tab.key ? `bg-${tab.color}-500/30 text-${tab.color}-300` : 'bg-white/10 text-slate-400'
+                activeTab === tab.key ? `bg-${tab.color}-200 text-${tab.color}-700` : 'bg-white text-slate-500 border border-slate-200'
               }`}>
                 {tab.events.length}
               </span>

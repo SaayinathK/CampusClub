@@ -45,34 +45,34 @@ const committees = [
 
 const Committees = () => {
     return (
-        <section id="committees" className="py-24 relative bg-slate-900/50">
+        <section id="committees" className="py-24 relative bg-gradient-to-b from-transparent via-sky-500/5 to-transparent">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
-                    <div className="inline-block mb-4 px-4 py-1 rounded-full glass text-blue-400 text-sm font-medium border border-blue-500/20">
-                        👥 The People Behind the Scenes
+                    <div className="theme-pill mb-4 px-4 py-1 text-sm font-medium uppercase tracking-[0.25em] w-max mx-auto">
+                        👥 Governance and support teams
                     </div>
                     <h2 className="text-3xl md:text-5xl font-bold mb-4">Campus <span className="text-gradient">Committees</span></h2>
-                    <p className="text-gray-400 max-w-2xl mx-auto">Meet the dedicated teams working tirelessly to make every campus event a memorable success.</p>
+                    <p className="text-slate-500 max-w-2xl mx-auto">Operational teams that keep approvals, events, student coordination, and campus engagement running smoothly.</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {committees.map((committee, index) => (
-                        <div key={index} className="group relative p-8 rounded-3xl glass-dark border border-white/5 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2">
+                        <div key={index} className="group relative p-8 rounded-3xl surface-card hover:border-cyan-300/30 transition-all duration-500 hover:-translate-y-2">
                             <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></div>
+                                <div className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
                             </div>
 
                             <div className="mb-6 transform transition-transform duration-500 group-hover:scale-110">
                                 {committee.icon}
                             </div>
 
-                            <h3 className="text-xl font-bold mb-1 group-hover:text-blue-400 transition-colors">{committee.name}</h3>
-                            <div className="text-sm font-medium text-blue-500 mb-4">{committee.role}</div>
-                            <p className="text-gray-400 text-sm leading-relaxed">{committee.description}</p>
+                            <h3 className="text-xl font-bold mb-1 text-slate-900 group-hover:text-cyan-700 transition-colors">{committee.name}</h3>
+                            <div className="text-sm font-medium text-sky-600 mb-4">{committee.role}</div>
+                            <p className="text-slate-500 text-sm leading-relaxed">{committee.description}</p>
 
-                            <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                                <span className="text-xs text-gray-500">Learn More</span>
-                                <svg className="w-5 h-5 text-gray-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">
+                                <span className="text-xs text-slate-500">Learn More</span>
+                                <svg className="w-5 h-5 text-slate-500 group-hover:text-cyan-700 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
                             </div>

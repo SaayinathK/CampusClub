@@ -11,32 +11,23 @@ import React from 'react';
  */
 export default function PageShell({ title, highlight, subtitle, actions, children, maxWidth }) {
   return (
-    <div style={{ padding: '32px 32px 64px', maxWidth: maxWidth || '100%' }}>
+    <div className="dashboard-container py-6 md:py-8 lg:py-10" style={{ maxWidth: maxWidth || '100%' }}>
 
       {/* Header */}
       {(title || subtitle || actions) && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          paddingBottom: 24,
-          borderBottom: '1px solid var(--border)',
-          marginBottom: 32,
-          flexWrap: 'wrap',
-          gap: 16,
-        }}>
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
             {title && (
-              <h2 style={{ fontFamily: 'var(--font-display)', marginBottom: 4, lineHeight: 1.1 }}>
-                {title}{highlight && <> <span className="gradient-text">{highlight}</span></>}
+              <h2 className="font-display text-3xl md:text-4xl font-black tracking-tight leading-tight text-slate-900">
+                {title}{highlight && <> <span className="text-gradient">{highlight}</span></>}
               </h2>
             )}
             {subtitle && (
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: 4 }}>{subtitle}</p>
+              <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
             )}
           </div>
           {actions && (
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>{actions}</div>
+            <div className="flex shrink-0 items-center gap-2.5">{actions}</div>
           )}
         </div>
       )}

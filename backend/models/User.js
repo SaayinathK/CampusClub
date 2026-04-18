@@ -78,6 +78,12 @@ const userSchema = new mongoose.Schema({
     },
     approvedAt: { type: Date },
     rejectionReason: { type: String },
+
+    // Incremented on logout to invalidate all previously issued JWTs.
+    tokenVersion: {
+        type: Number,
+        default: 0,
+    },
 }, { timestamps: true });
 
 // Fast lookup: find all pending students for a community (GET /users/community/:id/pending-students)

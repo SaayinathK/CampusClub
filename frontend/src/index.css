@@ -150,3 +150,19 @@
 .animation-delay-4000 {
   animation-delay: 4s;
 }
+
+/* hide toast/popups from common libraries used in React projects */
+.Toastify__toast-container,
+.Toastify__toast,
+.react-hot-toast,
+.toastr,
+.notistack-snackbar,
+#notistack-snackbar,
+.MuiSnackbar-root,
+.snackbar,
+.toast,
+.toaster {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}

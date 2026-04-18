@@ -55,7 +55,7 @@ const EventDetails = () => {
          if (err.response?.status === 404) setNotFound(true);
       } finally {
          setLoading(false);
-      }
+         }
    };
 
    const fetchMyReceipt = async () => {
@@ -81,7 +81,7 @@ const EventDetails = () => {
    }, [id]);
 
    useEffect(() => {
-      if (myParticipant && !myParticipant.paymentStatus !== 'not_required') {
+      if (myParticipant && myParticipant.paymentStatus !== 'not_required') {
          fetchMyReceipt();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -111,16 +111,16 @@ const Profile = () => {
       if (!window.confirm('Are you sure you want to delete this document?')) return;
 
       try {
-         const token = localStorage.getItem('token');
-         const res = await fetch(`http://localhost:5000/api/receipts/${id}`, {
-            method: 'DELETE',
-            headers: {
-               'Authorization': `Bearer ${token}`
-            }
-         });
-         if (res.ok) {
-            setReceipts(receipts.filter(r => r._id !== id));
-         }
+             const token = localStorage.getItem('token');
+             const res = await fetch(`http://localhost:5000/api/receipts/${id}`, {
+                  method: 'DELETE',
+                  headers: {
+                      'Authorization': `Bearer ${token}`
+                  }
+             });
+             if (res.ok) {
+                  setReceipts(receipts.filter(r => r._id !== id));
+             }
       } catch (err) {
          console.error('Delete Error:', err);
       }
@@ -149,9 +149,11 @@ const Profile = () => {
       } else if (name === 'expiry') {
          formattedValue = value.replace(/\//g, '').replace(/(\d{2})/g, '$1/').trim().slice(0, 5);
          if (formattedValue.endsWith('/')) formattedValue = formattedValue.slice(0, -1);
-      }
-      setNewCard({ ...newCard, [name]: formattedValue });
-   };
+         } else if (name === 'cvv') {
+             formattedValue = value.replace(/\D/g, '').slice(0, 3);
+         }
+         setNewCard({ ...newCard, [name]: formattedValue });
+    };
 
    const deleteCard = (id) => setCards(cards.filter(c => c.id !== id));
 

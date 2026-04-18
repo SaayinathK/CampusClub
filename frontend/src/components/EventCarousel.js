@@ -8,7 +8,7 @@ const EventCarousel = ({ events }) => {
     useEffect(() => {
         const interval = setInterval(() => {
             setActiveIndex((current) => (current + 1) % carouselEvents.length);
-        }, 5000);
+        }, 5001);
         return () => clearInterval(interval);
     }, [carouselEvents.length]);
 

@@ -142,18 +142,18 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-20 bg-[#0a0a0a] text-white px-4 md:px-6 overflow-hidden relative flex flex-col justify-center">
+    <div className="min-h-screen pt-32 pb-20 bg-slate-50 text-slate-900 px-4 md:px-6 overflow-hidden relative flex flex-col justify-center">
       {/* Dynamic Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{ x: [0, 50, 0], y: [0, -50, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px]"
+          className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-blue-300/30 rounded-full blur-[120px]"
         />
         <motion.div
           animate={{ x: [0, -50, 0], y: [0, 50, 0], scale: [1, 1.2, 1] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px]"
+          className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-purple-300/30 rounded-full blur-[120px]"
         />
       </div>
 
@@ -166,10 +166,10 @@ const SignUp = () => {
             className="inline-block"
           >
             <h1 className="text-6xl md:text-8xl font-black mb-4 tracking-tighter uppercase relative">
-              <span className="text-white drop-shadow-2xl">Join the </span>
+              <span className="text-slate-900 drop-shadow-sm">Join the </span>
               <span className="relative inline-block">
-                <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 text-transparent bg-clip-text drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]">Club Hub</span>
-                <div className="absolute -bottom-2 left-0 w-full h-[6px] bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-500 rounded-full blur-[2px] opacity-70"></div>
+                <span className="bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 text-transparent bg-clip-text drop-shadow-sm">Club Hub</span>
+                <div className="absolute -bottom-2 left-0 w-full h-[6px] bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 rounded-full blur-[2px] opacity-30"></div>
               </span>
             </h1>
           </motion.div>
@@ -177,7 +177,7 @@ const SignUp = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-gray-400 text-lg md:text-xl uppercase tracking-[0.3em] font-medium"
+            className="text-slate-500 text-lg md:text-xl uppercase tracking-[0.3em] font-medium"
           >
             Phase {step} of 3: <span className="text-indigo-400">{step === 1 ? 'Choose Your Path' : step === 2 ? 'The Details' : 'Verification'}</span>
           </motion.p>
@@ -202,16 +202,16 @@ const SignUp = () => {
                   whileHover={{ scale: 1.03, y: -5 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleRoleSelect(r.id)}
-                  className="group relative p-[1px] rounded-3xl overflow-hidden bg-white/5"
+                  className="group relative p-[1px] rounded-3xl overflow-hidden bg-slate-200"
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${r.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                  <div className="relative h-full bg-[#111] p-8 rounded-[23px] flex items-center justify-between border border-white/5 group-hover:bg-[#111]/90 transition-colors duration-300">
+                  <div className="relative h-full bg-white p-8 rounded-[23px] flex items-center justify-between border border-slate-200 shadow-sm group-hover:bg-white/90 transition-colors duration-300">
                     <div>
-                      <h3 className="text-2xl font-black mb-2 uppercase tracking-tight text-white">{r.title}</h3>
-                      <p className="text-gray-400 font-medium text-sm text-left">{r.desc}</p>
+                      <h3 className="text-2xl font-black mb-2 uppercase tracking-tight text-slate-900">{r.title}</h3>
+                      <p className="text-slate-500 font-medium text-sm text-left">{r.desc}</p>
                     </div>
-                    <div className={`p-4 rounded-full bg-gradient-to-br ${r.color} bg-opacity-10 shadow-[0_0_20px_rgba(255,255,255,0.05)] group-hover:scale-110 transition-transform duration-300`}>
-                      <r.icon size={32} className="text-white" />
+                    <div className={`p-4 rounded-full bg-gradient-to-br ${r.color} bg-opacity-10 shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+                      <r.icon size={32} className="text-slate-700" />
                     </div>
                   </div>
                 </motion.button>
@@ -227,37 +227,37 @@ const SignUp = () => {
               exit={{ opacity: 0, x: -50 }}
               className="max-w-md mx-auto"
             >
-              <div className="rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] p-10 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
+              <div className="rounded-[2.5rem] bg-white border border-slate-200 p-10 shadow-lg relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
 
                 <form onSubmit={handleSubmitDetails} className="space-y-6 relative z-10">
                   <div className="space-y-2 group">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-blue-400 transition-colors">Full Name</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-blue-600 transition-colors">Full Name</label>
                     <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
                       <input
                         type="text"
                         name="name"
                         required
                         placeholder="John Doe"
-                        className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none shadow-sm text-slate-900 placeholder:text-slate-400"
                         onChange={handleInputChange}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2 group">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-purple-600 transition-colors">
                       {role === 'student' ? 'Campus Email' : 'Email Address'}
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={20} />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-600 transition-colors" size={20} />
                       <input
                         type="email"
                         name="email"
                         required
                         placeholder={role === 'student' ? 'it2XXXXX@my.sliit.lk' : 'you@example.com'}
-                        className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all outline-none shadow-sm text-slate-900 placeholder:text-slate-400"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -265,15 +265,15 @@ const SignUp = () => {
 
                   {role === 'student' && (
                     <div className="space-y-2 group">
-                      <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-cyan-400 transition-colors">IT Number</label>
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-cyan-600 transition-colors">IT Number</label>
                       <div className="relative">
-                        <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-cyan-400 transition-colors" size={20} />
+                        <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-cyan-600 transition-colors" size={20} />
                         <input
                           type="text"
                           name="itNumber"
                           required
                           placeholder="IT2XXXXXXX"
-                          className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-cyan-500/50 focus:border-cyan-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner"
+                          className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500 transition-all outline-none shadow-sm text-slate-900 placeholder:text-slate-400"
                           onChange={handleInputChange}
                         />
                       </div>
@@ -283,14 +283,14 @@ const SignUp = () => {
                   {role === 'student' && (
                     <div className="space-y-2 group">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-blue-400 transition-colors">
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-blue-600 transition-colors">
                           Select Community
                         </label>
                         {communitiesError && (
                           <button
                             type="button"
                             onClick={fetchCommunities}
-                            className="text-xs text-blue-400 hover:text-blue-300 uppercase tracking-widest font-bold"
+                            className="text-xs text-blue-600 hover:text-blue-700 uppercase tracking-widest font-bold"
                           >
                             Retry
                           </button>
@@ -302,7 +302,7 @@ const SignUp = () => {
                         value={formData.requestedCommunity}
                         onChange={handleInputChange}
                         disabled={communitiesLoading}
-                        className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white disabled:opacity-50 disabled:cursor-wait"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none shadow-sm text-slate-900 disabled:opacity-50 disabled:cursor-wait"
                       >
                         {communitiesLoading ? (
                           <option value="">Loading communities...</option>
@@ -322,7 +322,7 @@ const SignUp = () => {
                         )}
                       </select>
                       {communities.length > 0 && (
-                        <p className="text-xs text-gray-600 uppercase tracking-widest">
+                        <p className="text-xs text-slate-500 uppercase tracking-widest">
                           {communities.length} communit{communities.length === 1 ? 'y' : 'ies'} available
                         </p>
                       )}
@@ -332,7 +332,7 @@ const SignUp = () => {
                   {role === 'community_admin' && (
                     <>
                       <div className="space-y-2 group">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">Community Name</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-purple-600 transition-colors">Community Name</label>
                         <input
                           type="text"
                           name="communityName"
@@ -340,11 +340,11 @@ const SignUp = () => {
                           placeholder="e.g. FOSS Community"
                           value={formData.communityName}
                           onChange={handleInputChange}
-                          className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white"
+                          className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all outline-none shadow-sm text-slate-900 placeholder:text-slate-400"
                         />
                       </div>
                       <div className="space-y-2 group">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">Community Description</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-purple-600 transition-colors">Community Description</label>
                         <textarea
                           name="communityDescription"
                           required
@@ -352,17 +352,17 @@ const SignUp = () => {
                           value={formData.communityDescription}
                           onChange={handleInputChange}
                           rows={3}
-                          className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white resize-none"
+                          className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all outline-none shadow-sm text-slate-900 resize-none placeholder:text-slate-400"
                         />
                       </div>
                       <div className="space-y-2 group">
-                        <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">Category</label>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-purple-600 transition-colors">Category</label>
                         <select
                           name="communityCategory"
                           required
                           value={formData.communityCategory}
                           onChange={handleInputChange}
-                          className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner text-white"
+                          className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all outline-none shadow-sm text-slate-900"
                         >
                           <option value="">-- Select a category --</option>
                           <option value="Technical">Technical</option>
@@ -377,15 +377,15 @@ const SignUp = () => {
                   )}
 
                   <div className="space-y-2 group">
-                    <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-emerald-400 transition-colors">Create Password</label>
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-emerald-600 transition-colors">Create Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-400 transition-colors" size={20} />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-600 transition-colors" size={20} />
                       <input
                         type="password"
                         name="password"
                         required
                         placeholder="••••••••"
-                        className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 focus:bg-[#1a1a1a] transition-all outline-none shadow-inner"
+                        className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none shadow-sm text-slate-900 placeholder:text-slate-400"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -395,7 +395,7 @@ const SignUp = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
-                    className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center gap-2 group mt-8 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                    className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-2 group mt-8 shadow-md"
                   >
                     Continue <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                   </motion.button>
@@ -403,7 +403,7 @@ const SignUp = () => {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="w-full py-4 text-gray-500 font-bold uppercase tracking-widest text-xs hover:text-white transition-colors"
+                    className="w-full py-4 text-slate-500 font-bold uppercase tracking-widest text-xs hover:text-slate-900 transition-colors"
                   >
                     Back to Roles
                   </button>
@@ -420,16 +420,16 @@ const SignUp = () => {
               exit={{ opacity: 0, scale: 0.9 }}
               className="max-w-md mx-auto"
             >
-              <div className="rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] p-10 backdrop-blur-3xl shadow-2xl text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-emerald-600" />
+              <div className="rounded-[2.5rem] bg-white border border-slate-200 p-10 shadow-lg text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-600" />
 
                 <div className="mb-10 mt-4">
                   <div className="w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6 relative">
                     <div className="absolute inset-0 border border-blue-500/30 rounded-full animate-ping"></div>
                     <ShieldCheck size={48} className="text-blue-400" />
                   </div>
-                  <h2 className="text-3xl font-black uppercase tracking-tight mb-3">Check Your Email</h2>
-                  <p className="text-gray-400">We sent a 6-digit verification code to <br /><span className="text-white font-bold">{formData.email}</span></p>
+                  <h2 className="text-3xl font-black uppercase tracking-tight mb-3 text-slate-900">Check Your Email</h2>
+                  <p className="text-slate-500">We sent a 6-digit verification code to <br /><span className="text-slate-900 font-bold">{formData.email}</span></p>
                 </div>
 
                 <form onSubmit={handleVerifyOtp} className="space-y-8">
@@ -442,7 +442,7 @@ const SignUp = () => {
                         maxLength={1}
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
-                        className="w-12 h-14 md:w-14 md:h-16 bg-[#161616] border border-white/10 rounded-xl text-center text-2xl font-black focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 outline-none transition-all shadow-inner text-white"
+                        className="w-12 h-14 md:w-14 md:h-16 bg-white border border-slate-300 rounded-xl text-center text-2xl font-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm text-slate-900"
                       />
                     ))}
                   </div>
@@ -451,13 +451,13 @@ const SignUp = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 py-4 rounded-2xl font-black uppercase tracking-widest text-white hover:from-blue-500 hover:to-indigo-500 transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 py-4 rounded-2xl font-black uppercase tracking-widest text-white hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md"
                   >
                     Verify Account
                   </motion.button>
 
-                  <div className="text-xs uppercase tracking-widest text-gray-500 font-bold">
-                    Didn't receive code? <button type="button" className="text-blue-400 hover:text-blue-300 ml-1 underline decoration-blue-500/30 underline-offset-4">Resend</button>
+                  <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">
+                    Didn't receive code? <button type="button" className="text-blue-600 hover:text-blue-700 ml-1 underline decoration-blue-500/30 underline-offset-4">Resend</button>
                   </div>
                 </form>
               </div>
@@ -483,23 +483,23 @@ const SignUp = () => {
                 <div className="absolute inset-0 animate-ping rounded-full bg-emerald-500/20" />
                 <div className="absolute inset-[-50%] animate-spin-slow rounded-full bg-gradient-to-tr from-transparent via-emerald-500/10 to-transparent" />
               </div>
-              <h1 className="text-5xl font-black uppercase mb-4 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Welcome Aboard</h1>
+              <h1 className="text-5xl font-black uppercase mb-4 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-slate-900 to-slate-600">Welcome Aboard</h1>
               {(role === 'student' || role === 'community_admin') ? (
                 <>
-                  <p className="text-gray-300 text-lg font-semibold mb-2">Application Submitted!</p>
-                  <p className="text-gray-400 text-base">Your application is pending approval. You will be notified once approved.</p>
-                  <Link to="/signin" className="inline-block mt-6 text-sm text-blue-400 hover:text-blue-300 underline underline-offset-4">Go to Sign In</Link>
+                  <p className="text-slate-700 text-lg font-semibold mb-2">Application Submitted!</p>
+                  <p className="text-slate-500 text-base">Your application is pending approval. You will be notified once approved.</p>
+                  <Link to="/signin" className="inline-block mt-6 text-sm text-blue-600 hover:text-blue-700 underline underline-offset-4">Go to Sign In</Link>
                 </>
               ) : (
-                <p className="text-gray-400 text-lg">Routing protocols engaged...</p>
+                <p className="text-slate-500 text-lg">Routing protocols engaged...</p>
               )}
             </motion.div>
           )}
         </AnimatePresence>
 
         <div className="mt-16 text-center">
-          <p className="text-gray-500 font-medium text-sm tracking-widest uppercase">
-            Already registered? <Link to="/signin" className="text-white font-bold hover:text-blue-400 transition-colors ml-2 border-b border-white/20 pb-1 hover:border-blue-400/50">Log In Here</Link>
+          <p className="text-slate-500 font-medium text-sm tracking-widest uppercase">
+            Already registered? <Link to="/signin" className="text-blue-600 font-bold hover:text-blue-700 transition-colors ml-2 border-b border-blue-200 pb-1 hover:border-blue-400">Log In Here</Link>
           </p>
         </div>
       </div>

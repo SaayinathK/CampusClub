@@ -67,21 +67,21 @@ export default function StudentRegistrations() {
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-100 relative overflow-hidden">
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full mix-blend-screen filter blur-[120px] opacity-60 pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full mix-blend-screen filter blur-[150px] opacity-60 pointer-events-none" />
+    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-slate-50">
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-cyan-300/30 rounded-full filter blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-purple-300/30 rounded-full filter blur-[150px] pointer-events-none" />
 
       <div className="max-w-5xl mx-auto relative z-10 space-y-8">
 
         {/* Header */}
-        <header className="glass-dark rounded-3xl p-8 border border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <header className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">
-              My <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Registrations</span>
+              My <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-purple-600">Registrations</span>
             </h1>
-            <p className="text-slate-400 text-sm font-medium">All events you've signed up for</p>
+            <p className="text-slate-500 text-sm font-medium">All events you've signed up for</p>
           </div>
-          <Link to="/student" className="px-5 py-2.5 rounded-full glass hover:bg-white/10 font-bold text-sm text-white border border-white/10 transition-all">
+          <Link to="/student" className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-50 font-bold text-sm text-slate-700 border border-slate-200 shadow-sm transition-all">
             ← Dashboard
           </Link>
         </header>
@@ -94,10 +94,10 @@ export default function StudentRegistrations() {
             { label: 'Attended', value: stats.attended, icon: '✅', color: 'emerald' },
             { label: 'Paid Events', value: stats.paid, icon: '💳', color: 'yellow' },
           ].map((s) => (
-            <div key={s.label} className={`glass-dark rounded-2xl p-5 border border-white/5`}>
+            <div key={s.label} className={`bg-white rounded-2xl p-5 border border-slate-200 shadow-sm`}>
               <div className="text-3xl mb-2">{s.icon}</div>
-              <div className={`text-2xl font-black text-${s.color}-400`}>{s.value}</div>
-              <div className="text-xs text-slate-400 uppercase font-bold tracking-widest mt-1">{s.label}</div>
+              <div className={`text-2xl font-black text-${s.color}-600`}>{s.value}</div>
+              <div className="text-xs text-slate-500 uppercase font-bold tracking-widest mt-1">{s.label}</div>
             </div>
           ))}
         </div>
@@ -116,8 +116,8 @@ export default function StudentRegistrations() {
               onClick={() => setFilter(f.value)}
               className={`px-4 py-2 rounded-full font-bold text-xs uppercase tracking-widest transition-all border ${
                 filter === f.value
-                  ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-400'
-                  : 'border-white/10 text-slate-400 hover:bg-white/5 hover:text-white'
+                  ? 'bg-cyan-50 border-cyan-200 text-cyan-700'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
               {f.label}
@@ -135,18 +135,18 @@ export default function StudentRegistrations() {
         {/* List */}
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[30vh] space-y-4">
-            <div className="w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
-            <span className="text-cyan-400 font-medium text-sm uppercase tracking-widest animate-pulse">Loading...</span>
+            <div className="w-10 h-10 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin" />
+            <span className="text-cyan-600 font-medium text-sm uppercase tracking-widest animate-pulse">Loading...</span>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="glass-dark rounded-3xl p-16 text-center border border-white/5">
+          <div className="bg-white rounded-3xl p-16 text-center border border-slate-200 shadow-sm text-slate-900">
             <div className="text-6xl mb-4 opacity-50">📋</div>
             <h3 className="text-2xl font-black mb-2">No registrations</h3>
-            <p className="text-slate-400 text-sm mb-6">
+            <p className="text-slate-500 text-sm mb-6">
               {filter === 'all' ? "You haven't registered for any events yet." : `No ${filter} events found.`}
             </p>
             {filter === 'all' && (
-              <Link to="/events" className="px-6 py-3 rounded-full bg-cyan-500/20 text-cyan-400 font-bold text-sm hover:bg-cyan-500/30 transition-colors">
+              <Link to="/events" className="px-6 py-3 rounded-full bg-cyan-50 border border-cyan-200 text-cyan-700 font-bold text-sm hover:bg-cyan-100 transition-colors">
                 Browse Events →
               </Link>
             )}
@@ -161,17 +161,17 @@ export default function StudentRegistrations() {
               const isUpcoming = reg.status === 'published';
 
               return (
-                <div key={reg._id} className="glass-dark rounded-2xl border border-white/5 overflow-hidden hover:border-white/10 transition-all">
+                <div key={reg._id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="flex flex-col md:flex-row gap-0">
                     {/* Date column */}
-                    <div className="md:w-24 bg-white/5 flex md:flex-col items-center justify-center p-4 gap-2 md:gap-0 shrink-0">
-                      <div className="text-xs font-black uppercase text-slate-400 tracking-widest">
+                    <div className="md:w-24 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-100 flex md:flex-col items-center justify-center p-4 gap-2 md:gap-0 shrink-0">
+                      <div className="text-xs font-black uppercase text-slate-500 tracking-widest">
                         {new Date(reg.startDate).toLocaleDateString('en-US', { month: 'short' })}
                       </div>
-                      <div className="text-3xl font-black text-white">
+                      <div className="text-3xl font-black text-slate-900">
                         {new Date(reg.startDate).getDate()}
                       </div>
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-slate-400">
                         {new Date(reg.startDate).getFullYear()}
                       </div>
                     </div>
@@ -180,27 +180,27 @@ export default function StudentRegistrations() {
                     <div className="flex-1 p-5 flex flex-col md:flex-row gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-${evStatus.color}-500/10 text-${evStatus.color}-400 border-${evStatus.color}-500/20`}>
+                          <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-${evStatus.color}-50 text-${evStatus.color}-700 border-${evStatus.color}-200`}>
                             {evStatus.label}
                           </span>
                           {reg.isFree ? (
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-emerald-50 text-emerald-700 border-emerald-200">
                               Free
                             </span>
                           ) : (
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-yellow-500/10 text-yellow-400 border-yellow-500/20">
+                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-yellow-50 text-yellow-700 border-yellow-200">
                               💳 LKR {reg.ticketPrice}
                             </span>
                           )}
                           {reg.participant?.attended && (
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-purple-500/10 text-purple-400 border-purple-500/20">
+                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-purple-50 text-purple-700 border-purple-200">
                               ✓ Attended
                             </span>
                           )}
                         </div>
 
-                        <h3 className="font-black text-white text-lg leading-tight mb-1">{reg.title}</h3>
-                        <p className="text-slate-400 text-xs font-medium">
+                        <h3 className="font-black text-slate-900 text-lg leading-tight mb-1">{reg.title}</h3>
+                        <p className="text-slate-600 text-xs font-medium">
                           {reg.community?.name && <span className="mr-3">🏛️ {reg.community.name}</span>}
                           {reg.venue && <span className="mr-3">📍 {reg.venue}</span>}
                           {reg.endDate && reg.endDate !== reg.startDate && (
@@ -210,7 +210,7 @@ export default function StudentRegistrations() {
 
                         {/* Payment status */}
                         {payment && (
-                          <div className={`mt-3 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border bg-${payment.color}-500/10 text-${payment.color}-400 border-${payment.color}-500/20`}>
+                          <div className={`mt-3 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border bg-${payment.color}-50 text-${payment.color}-700 border-${payment.color}-200`}>
                             {payment.dot} {payment.label}
                           </div>
                         )}
@@ -220,14 +220,14 @@ export default function StudentRegistrations() {
                       <div className="flex md:flex-col gap-2 shrink-0 md:items-end justify-end">
                         <Link
                           to={`/events/${reg._id}`}
-                          className="px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 font-black text-[10px] uppercase tracking-widest hover:bg-blue-500/20 transition-colors text-center"
+                          className="px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 font-black text-[10px] uppercase tracking-widest hover:bg-blue-100 transition-colors text-center"
                         >
                           View Event
                         </Link>
                         {isUpcoming && (
                           <button
                             onClick={() => handleUnregister(reg._id, reg.title)}
-                            className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 font-black text-[10px] uppercase tracking-widest hover:bg-rose-500/10 hover:text-rose-400 hover:border-rose-500/20 transition-colors"
+                            className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-500 font-black text-[10px] uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors"
                           >
                             Unregister
                           </button>

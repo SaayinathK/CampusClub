@@ -17,7 +17,7 @@ const EventCard = ({ event, onViewFeedback }) => {
     : "NA";
 
   return (
-    <div className="group relative glass-dark rounded-3xl overflow-hidden border border-white/5 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-2xl flex flex-col">
+    <div className="group relative bg-white rounded-3xl overflow-hidden border border-slate-200 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-sm flex flex-col">
       <div className="h-48 overflow-hidden relative flex-shrink-0">
         {event.coverImage ? (
           <img src={event.coverImage} alt={event.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -26,22 +26,22 @@ const EventCard = ({ event, onViewFeedback }) => {
             {event.title?.charAt(0)}
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent" />
         <div className="absolute top-4 left-4">
           <CategoryBadge category={event.category} />
         </div>
-        <div className="absolute top-4 right-4 px-3 py-1.5 rounded-xl glass text-yellow-500 text-[10px] font-black flex items-center gap-1.5 shadow-2xl border border-white/10">
+        <div className="absolute top-4 right-4 px-3 py-1.5 rounded-xl bg-white text-yellow-600 text-[10px] font-black flex items-center gap-1.5 shadow-md border border-slate-200">
           <Star size={12} className="fill-current" /> {averageRating}
         </div>
       </div>
 
-      <div className="p-6 flex flex-col flex-1">
-        <h3 className="text-xl font-black mb-2 group-hover:text-blue-400 transition-colors uppercase tracking-tight leading-tight line-clamp-2">
+      <div className="p-6 flex flex-col flex-1 bg-white">
+        <h3 className="text-xl font-black mb-2 text-slate-900 group-hover:text-blue-600 transition-colors uppercase tracking-tight leading-tight line-clamp-2">
           {event.title}
         </h3>
-        {event.description && <p className="text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed">{event.description}</p>}
+        {event.description && <p className="text-slate-600 text-xs mb-4 line-clamp-2 leading-relaxed">{event.description}</p>}
 
-        <div className="flex flex-col gap-2 mb-5 text-[11px] text-gray-400 font-bold uppercase tracking-widest">
+        <div className="flex flex-col gap-2 mb-5 text-[11px] text-slate-500 font-bold uppercase tracking-widest">
           <div className="flex items-center gap-2"><Calendar size={12} className="text-blue-500" /> {formatDate(event.startDate)}</div>
           {event.venue && <div className="flex items-center gap-2"><MapPin size={12} className="text-purple-500" /> {event.venue}</div>}
           {event.isVirtual && <div className="flex items-center gap-2"><Wifi size={12} className="text-cyan-500" /> Virtual Event</div>}
@@ -52,13 +52,13 @@ const EventCard = ({ event, onViewFeedback }) => {
         <div className="mt-auto flex gap-3">
           <Link
             to={`/events/${event._id}`}
-            className="flex-1 text-center py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[10px] font-black transition-all active:scale-95 uppercase tracking-[0.2em] border border-white/5 flex items-center justify-center gap-2 group/btn"
+            className="flex-1 text-center py-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-black transition-all active:scale-95 uppercase tracking-[0.2em] border border-blue-200 flex items-center justify-center gap-2 group/btn"
           >
-            View Details <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+            Register / Details <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
           </Link>
           <button
             onClick={() => onViewFeedback(event)}
-            className="p-3 rounded-xl bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white transition-all active:scale-95 border border-blue-500/20 flex items-center justify-center"
+            className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-600 transition-all active:scale-95 border border-slate-200 flex items-center justify-center"
             title="View Feedbacks"
           >
             <MessageSquare size={18} />
@@ -70,13 +70,13 @@ const EventCard = ({ event, onViewFeedback }) => {
 };
 
 const FeaturedCard = ({ event }) => (
-  <div className="relative group rounded-[2.5rem] overflow-hidden min-h-[420px] flex items-end shadow-2xl shadow-blue-500/10 border border-white/5 hover:border-blue-500/30 transition-all duration-700">
+  <div className="relative group rounded-[2.5rem] overflow-hidden min-h-[420px] flex items-end shadow-lg shadow-blue-500/10 border border-slate-200 hover:border-blue-500/30 transition-all duration-700 bg-white">
     {event.coverImage ? (
-      <img src={event.coverImage} alt={event.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+      <img src={event.coverImage} alt={event.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 opacity-20" />
     ) : (
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 to-purple-900/60" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50" />
     )}
-    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
     <div className="relative p-10 w-full">
       <div className="flex justify-between items-start mb-4">
         <span className="inline-block px-4 py-1.5 rounded-xl bg-blue-600 font-black text-white uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-blue-500/40">
@@ -84,15 +84,15 @@ const FeaturedCard = ({ event }) => (
         </span>
         <CategoryBadge category={event.category} />
       </div>
-      <h3 className="text-3xl md:text-4xl font-black mb-4 uppercase leading-tight tracking-tighter text-white">{event.title}</h3>
-      <div className="flex gap-6 text-[11px] text-gray-400 mb-6 uppercase font-black tracking-[0.2em] items-center flex-wrap">
+      <h3 className="text-3xl md:text-4xl font-black mb-4 uppercase leading-tight tracking-tighter text-slate-900 drop-shadow-sm">{event.title}</h3>
+      <div className="flex gap-6 text-[11px] text-slate-600 mb-6 uppercase font-black tracking-[0.2em] items-center flex-wrap">
         <div className="flex items-center gap-2"><Calendar size={12} className="text-blue-400" /> {formatDate(event.startDate)}</div>
         {event.venue && <div className="flex items-center gap-2"><MapPin size={12} className="text-purple-400" /> {event.venue}</div>}
         {event.community?.name && <div className="flex items-center gap-2"><Star size={12} className="text-yellow-400" /> {event.community.name}</div>}
       </div>
       <Link
         to={`/events/${event._id}`}
-        className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-white text-black font-black text-[11px] transition-all hover:bg-gray-200 active:scale-95 shadow-2xl uppercase tracking-[0.3em]"
+        className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-blue-600 text-white font-black text-[11px] transition-all hover:bg-blue-700 active:scale-95 shadow-md uppercase tracking-[0.3em]"
       >
         View Details <ArrowRight size={14} />
       </Link>
@@ -142,10 +142,10 @@ export default function Events() {
       <div className="container mx-auto px-6">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-5xl md:text-8xl font-black mb-6 uppercase tracking-tighter">
-            Campus <span className="bg-gradient-to-r from-blue-400 to-indigo-500 text-transparent bg-clip-text">Events</span>
+          <h1 className="text-5xl md:text-8xl font-black mb-6 uppercase tracking-tighter text-slate-900">
+            Campus <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-transparent bg-clip-text">Events</span>
           </h1>
-          <p className="text-gray-400 max-w-2xl text-lg uppercase font-bold tracking-widest leading-loose border-l-4 border-blue-500 pl-8">
+          <p className="text-slate-600 max-w-2xl text-lg uppercase font-bold tracking-widest leading-loose border-l-4 border-blue-500 pl-8">
             Stay updated with everything happening around the campus. Explore, participate, and share experiences.
           </p>
         </div>
@@ -157,11 +157,11 @@ export default function Events() {
             placeholder="Search events..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 text-white text-sm outline-none focus:border-blue-500/50 transition-colors placeholder:text-gray-600 min-w-[220px]"
+            className="bg-white border border-slate-200 rounded-2xl px-5 py-3 text-slate-900 text-sm outline-none focus:border-blue-500/50 transition-colors placeholder:text-slate-400 min-w-[220px] shadow-sm"
           />
           <button
             onClick={() => setCategory('')}
-            className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${category === '' ? 'bg-white text-black border-white' : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30'}`}
+            className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${category === '' ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}
           >
             All
           </button>
@@ -169,7 +169,7 @@ export default function Events() {
             <button
               key={c}
               onClick={() => setCategory(c === category ? '' : c)}
-              className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${category === c ? 'bg-blue-600 text-white border-blue-600' : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30'}`}
+              className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${category === c ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'}`}
             >
               {c}
             </button>
@@ -181,10 +181,10 @@ export default function Events() {
             <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
           </div>
         ) : events.length === 0 ? (
-          <div className="text-center py-40">
-            <div className="text-6xl mb-6">📅</div>
-            <h3 className="text-2xl font-black uppercase tracking-widest text-white mb-3">No Events Found</h3>
-            <p className="text-gray-500 uppercase text-sm tracking-widest">{search || category ? 'Try a different search or category' : 'Check back soon for upcoming events'}</p>
+          <div className="text-center py-40 bg-white border border-slate-200 rounded-[3rem] shadow-sm max-w-4xl mx-auto">
+            <div className="text-6xl mb-6 opacity-80">📅</div>
+            <h3 className="text-2xl font-black uppercase tracking-widest text-slate-900 mb-3">No Events Found</h3>
+            <p className="text-slate-500 uppercase text-sm tracking-widest">{search || category ? 'Try a different search or category' : 'Check back soon for upcoming events'}</p>
           </div>
         ) : (
           <>
@@ -192,9 +192,9 @@ export default function Events() {
             {featured.length > 0 && (
               <section className="mb-20">
                 <div className="flex items-center gap-6 mb-10">
-                  <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] text-white whitespace-nowrap">Upcoming Events</h2>
+                  <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] text-slate-900 whitespace-nowrap">Upcoming Events</h2>
                   <div className="h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-transparent flex-1" />
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/5 text-blue-400 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 text-blue-600 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
                     <Star size={12} strokeWidth={3} /> Featured
                   </div>
                 </div>
@@ -208,9 +208,9 @@ export default function Events() {
             {rest.length > 0 && (
               <section>
                 <div className="flex items-center gap-6 mb-10">
-                  <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] text-white whitespace-nowrap">All Events</h2>
+                  <h2 className="text-2xl md:text-3xl font-black uppercase tracking-[0.3em] text-slate-900 whitespace-nowrap">All Events</h2>
                   <div className="h-[2px] bg-gradient-to-r from-purple-500 via-pink-500 to-transparent flex-1" />
-                  <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">{events.length} total</span>
+                  <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest whitespace-nowrap px-4 py-2 bg-slate-100 rounded-full border border-slate-200">{events.length} total</span>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {rest.map(ev => <EventCard key={ev._id} event={ev} onViewFeedback={handleViewFeedback} />)}

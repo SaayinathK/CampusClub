@@ -163,18 +163,18 @@ const EventDetails = () => {
 
   if (loading)
     return (
-      <div className="pt-32 flex flex-col items-center justify-center min-h-screen gap-4">
+      <div className="pt-32 flex flex-col items-center justify-center min-h-screen gap-4 bg-slate-50">
         <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-        <span className="text-blue-400 text-sm font-bold uppercase tracking-widest animate-pulse">Loading Event...</span>
+        <span className="text-blue-600 text-sm font-bold uppercase tracking-widest animate-pulse">Loading Event...</span>
       </div>
     );
 
   if (notFound || !event)
     return (
-      <div className="pt-32 text-center min-h-screen">
+      <div className="pt-32 text-center min-h-screen bg-slate-50">
         <div className="text-6xl mb-4">🔍</div>
-        <h2 className="text-2xl font-black uppercase mb-4">Event Not Found</h2>
-        <Link to="/events" className="text-blue-400 hover:text-blue-300 font-bold uppercase text-sm tracking-widest">
+        <h2 className="text-2xl font-black uppercase mb-4 text-slate-900">Event Not Found</h2>
+        <Link to="/events" className="text-blue-600 hover:text-blue-700 font-bold uppercase text-sm tracking-widest">
           ← Back to Events
         </Link>
       </div>
@@ -197,11 +197,11 @@ const EventDetails = () => {
   const needsReceipt = paymentStatus === 'pending' || paymentStatus === 'rejected';
 
   return (
-    <div className="pt-32 pb-24 min-h-screen">
+    <div className="pt-32 pb-24 min-h-screen bg-slate-50">
       <div className="container mx-auto px-6 max-w-6xl">
         <Link
           to="/events"
-          className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-8 uppercase text-xs font-black tracking-widest transition-colors"
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8 uppercase text-xs font-black tracking-widest transition-colors"
         >
           <ArrowLeft size={14} /> Back to Events
         </Link>
@@ -209,11 +209,11 @@ const EventDetails = () => {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* ── Left: Event Info ── */}
           <div>
-            <div className="rounded-3xl overflow-hidden mb-8 shadow-2xl shadow-blue-500/10 bg-gradient-to-br from-blue-900/40 to-purple-900/40 h-[380px]">
+            <div className="rounded-3xl overflow-hidden mb-8 shadow-md h-[380px] bg-slate-100">
               {event.coverImage ? (
                 <img src={event.coverImage} alt={event.title} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-8xl font-black text-white/10">
+                <div className="w-full h-full flex items-center justify-center text-8xl font-black text-slate-200">
                   {event.title?.charAt(0)}
                 </div>
               )}
@@ -244,15 +244,15 @@ const EventDetails = () => {
                 </span>
               )}
               {totalFeedbacks.length > 0 && (
-                <span className="flex items-center gap-1 text-yellow-400 font-bold text-sm">
-                  ⭐ {avgRating} <span className="text-gray-500 text-xs">({totalFeedbacks.length} reviews)</span>
+                <span className="flex items-center gap-1 text-yellow-500 font-bold text-sm">
+                  ⭐ {avgRating} <span className="text-slate-500 text-xs">({totalFeedbacks.length} reviews)</span>
                 </span>
               )}
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-black mb-6 uppercase leading-tight">{event.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-black mb-6 uppercase leading-tight text-slate-900">{event.title}</h1>
 
-            <div className="space-y-3 text-gray-400 text-sm font-bold uppercase tracking-widest mb-6">
+            <div className="space-y-3 text-slate-500 text-sm font-bold uppercase tracking-widest mb-6">
               <div className="flex items-center gap-3">
                 <Calendar size={16} className="text-blue-500 shrink-0" />
                 {fmt(event.startDate)}
@@ -267,7 +267,7 @@ const EventDetails = () => {
               {event.isVirtual && event.virtualLink && (
                 <div className="flex items-center gap-3">
                   <Wifi size={16} className="text-cyan-500 shrink-0" />
-                  <a href={event.virtualLink} target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline normal-case">
+                  <a href={event.virtualLink} target="_blank" rel="noreferrer" className="text-cyan-600 hover:underline normal-case">
                     {event.virtualLink}
                   </a>
                 </div>
@@ -282,13 +282,13 @@ const EventDetails = () => {
             {/* Capacity bar */}
             {event.maxParticipants > 0 && (
               <div className="mb-6">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2">
+                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
                   <span>Capacity</span>
                   <span className={isFull ? 'text-rose-400' : 'text-emerald-400'}>
                     {isFull ? 'FULL' : `${event.maxParticipants - (event.participants?.length || 0)} spots left`}
                   </span>
                 </div>
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all ${capacityPct >= 90 ? 'bg-rose-500' : capacityPct >= 60 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                     style={{ width: `${capacityPct}%` }}
@@ -297,7 +297,7 @@ const EventDetails = () => {
               </div>
             )}
 
-            <p className="text-gray-400 leading-loose">{event.description}</p>
+            <p className="text-slate-600 leading-loose">{event.description}</p>
           </div>
 
           {/* ── Right: Registration + Feedback ── */}
@@ -305,14 +305,14 @@ const EventDetails = () => {
 
             {/* Registration Panel */}
             {event.status === 'published' && isStudent && (
-              <div className="glass-dark p-8 rounded-3xl border border-white/5">
-                <h2 className="text-xl font-black mb-6 uppercase tracking-widest">Registration</h2>
+              <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-slate-900">Registration</h2>
 
                 {!myParticipant ? (
                   /* Not registered */
                   <div>
                     {!event.isFree && (
-                      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-4 mb-5 text-sm text-yellow-300 leading-relaxed">
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 mb-5 text-sm text-yellow-700 leading-relaxed">
                         <span className="font-black block mb-1">Paid Event — LKR {event.ticketPrice}</span>
                         After registering you'll need to upload a payment receipt for verification.
                       </div>
@@ -345,8 +345,8 @@ const EventDetails = () => {
 
                     {/* Receipt upload (paid events needing receipt) */}
                     {needsReceipt && (
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                        <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">
+                      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                        <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4">
                           {paymentStatus === 'rejected'
                             ? '⚠️ Your receipt was rejected. Please upload a new one.'
                             : 'Upload payment receipt to confirm your spot.'}
@@ -357,10 +357,10 @@ const EventDetails = () => {
                           </div>
                         )}
                         <form onSubmit={handleReceiptUpload} className="space-y-3">
-                          <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/10 rounded-2xl p-6 cursor-pointer hover:border-blue-500/50 transition-colors">
-                            <Upload size={24} className="text-gray-500" />
-                            <span className="text-xs font-black uppercase tracking-widest text-gray-500">
-                              {receiptFile ? receiptFile.name : 'Click to select file (JPG, PNG, PDF — max 5MB)'}
+                          <label className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-slate-300 rounded-2xl p-6 cursor-pointer hover:border-blue-500/50 transition-colors bg-white">
+                            <Upload size={24} className="text-slate-400" />
+                            <span className="text-xs font-black uppercase tracking-widest text-slate-500 text-center">
+                              {receiptFile ? receiptFile.name : 'Click to select file (JPG, PNG, PDF)'}
                             </span>
                             <input
                               type="file"
@@ -391,7 +391,7 @@ const EventDetails = () => {
                     <button
                       onClick={handleUnregister}
                       disabled={registering}
-                      className="w-full py-3 rounded-xl bg-white/5 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/30 text-gray-400 hover:text-rose-400 font-black uppercase tracking-widest text-xs transition-all disabled:opacity-50"
+                      className="w-full py-3 rounded-xl bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-slate-500 hover:text-rose-500 font-black uppercase tracking-widest text-xs transition-all disabled:opacity-50"
                     >
                       {registering ? 'Processing...' : 'Unregister'}
                     </button>
@@ -402,8 +402,8 @@ const EventDetails = () => {
 
             {/* Event not open for registration */}
             {event.status !== 'published' && (
-              <div className="glass-dark p-6 rounded-3xl border border-white/5 text-center">
-                <p className="text-gray-500 text-xs font-black uppercase tracking-widest">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm text-center">
+                <p className="text-slate-500 text-xs font-black uppercase tracking-widest">
                   {event.status === 'completed' ? 'This event has ended.' : `Event is ${event.status.replace('_', ' ')}.`}
                 </p>
               </div>
@@ -411,8 +411,8 @@ const EventDetails = () => {
 
             {/* Not logged in */}
             {!storedUser && event.status === 'published' && (
-              <div className="glass-dark p-8 rounded-3xl border border-white/5 text-center">
-                <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-4 leading-loose">
+              <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm text-center">
+                <p className="text-slate-600 text-xs font-black uppercase tracking-widest mb-4 leading-loose">
                   Sign in to register for this event
                 </p>
                 <Link to="/signin">
@@ -424,12 +424,12 @@ const EventDetails = () => {
             )}
 
             {/* Feedback Section */}
-            <div className="glass-dark p-8 rounded-3xl border border-white/5">
-              <h2 className="text-xl font-black mb-6 uppercase tracking-widest">Reviews</h2>
+            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+              <h2 className="text-xl font-black mb-6 uppercase tracking-widest text-slate-900">Reviews</h2>
 
               {!storedUser ? (
-                <div className="bg-blue-500/10 border border-blue-500/30 p-6 rounded-2xl text-center mb-6">
-                  <p className="text-gray-400 text-xs font-black uppercase tracking-widest mb-4 leading-loose">
+                <div className="bg-blue-50 border border-blue-200 p-6 rounded-2xl text-center mb-6">
+                  <p className="text-slate-600 text-xs font-black uppercase tracking-widest mb-4 leading-loose">
                     Sign in to leave a review
                   </p>
                   <Link to="/signin">
@@ -439,26 +439,26 @@ const EventDetails = () => {
                   </Link>
                 </div>
               ) : !canReview ? (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 p-5 rounded-2xl text-center mb-6">
-                  <p className="text-yellow-500 text-[10px] font-black uppercase tracking-widest leading-loose">
+                <div className="bg-yellow-50 border border-yellow-200 p-5 rounded-2xl text-center mb-6">
+                  <p className="text-yellow-600 text-[10px] font-black uppercase tracking-widest leading-loose">
                     Only students and external participants can leave reviews.
                   </p>
                 </div>
               ) : submitted ? (
-                <div className="bg-green-500/20 border border-green-500/50 p-5 rounded-2xl text-green-400 mb-6 text-sm font-bold">
+                <div className="bg-green-50 border border-green-200 p-5 rounded-2xl text-green-700 mb-6 text-sm font-bold">
                   ✓ Your review was submitted successfully!
                 </div>
               ) : (
                 <form onSubmit={handleSubmitFeedback} className="space-y-5 mb-8">
                   <div>
-                    <label className="block text-xs font-black uppercase text-gray-500 mb-3 tracking-widest">Rating</label>
+                    <label className="block text-xs font-black uppercase text-slate-500 mb-3 tracking-widest">Rating</label>
                     <div className="flex gap-3">
                       {[1, 2, 3, 4, 5].map(v => (
                         <button
                           key={v}
                           type="button"
                           onClick={() => setRating(v)}
-                          className={`w-11 h-11 rounded-xl font-black transition-all ${rating === v ? 'bg-blue-600 text-white scale-110 shadow-xl shadow-blue-500/30' : 'bg-white/5 text-gray-500 hover:text-white border border-white/10'}`}
+                          className={`w-11 h-11 rounded-xl font-black transition-all ${rating === v ? 'bg-blue-600 text-white scale-110 shadow-lg shadow-blue-500/30' : 'bg-slate-50 text-slate-500 hover:text-slate-900 border border-slate-200'}`}
                         >
                           {v}
                         </button>
@@ -466,14 +466,14 @@ const EventDetails = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-black uppercase text-gray-500 mb-3 tracking-widest">Your Comments</label>
+                    <label className="block text-xs font-black uppercase text-slate-500 mb-3 tracking-widest">Your Comments</label>
                     <textarea
                       value={feedback}
                       onChange={e => setFeedback(e.target.value)}
                       required
                       rows={4}
                       placeholder="Tell us about your experience..."
-                      className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:border-blue-500 transition-colors text-sm font-medium resize-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-slate-900 focus:outline-none focus:border-blue-500 transition-colors text-sm font-medium resize-none placeholder-slate-400"
                     />
                   </div>
                   <button
@@ -486,26 +486,26 @@ const EventDetails = () => {
               )}
 
               <div>
-                <h3 className="text-lg font-black mb-5 uppercase tracking-widest border-b border-white/5 pb-4">
+                <h3 className="text-lg font-black mb-5 uppercase tracking-widest border-b border-slate-200 pb-4 text-slate-900">
                   {totalFeedbacks.length > 0
                     ? `${totalFeedbacks.length} Review${totalFeedbacks.length > 1 ? 's' : ''}`
                     : 'No Reviews Yet'}
                 </h3>
                 <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                   {totalFeedbacks.length === 0 ? (
-                    <p className="text-gray-600 text-xs font-black uppercase italic">Be the first to leave a review!</p>
+                    <p className="text-slate-400 text-xs font-black uppercase italic">Be the first to leave a review!</p>
                   ) : (
                     [...totalFeedbacks].reverse().map((f, i) => (
-                      <div key={i} className="p-5 rounded-2xl bg-white/5 border border-white/5">
+                      <div key={i} className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
                         <div className="flex items-center gap-3 mb-2">
                           <div className="flex text-yellow-400 text-xs">
                             {[...Array(5)].map((_, j) => (
                               <span key={j} className={j < f.rating ? 'opacity-100' : 'opacity-20'}>★</span>
                             ))}
                           </div>
-                          <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{f.username}</span>
+                          <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest">{f.username}</span>
                         </div>
-                        <p className="text-xs text-gray-300 leading-relaxed">{f.comment}</p>
+                        <p className="text-xs text-slate-700 leading-relaxed">{f.comment}</p>
                       </div>
                     ))
                   )}

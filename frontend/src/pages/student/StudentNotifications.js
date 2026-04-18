@@ -78,39 +78,39 @@ export default function StudentNotifications() {
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-100 relative overflow-hidden">
+    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-slate-50">
       {/* Background blobs */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full mix-blend-screen filter blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-cyan-600/10 rounded-full mix-blend-screen filter blur-[150px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-purple-300/30 rounded-full filter blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-cyan-300/30 rounded-full filter blur-[150px] pointer-events-none" />
 
       <div className="max-w-3xl mx-auto relative z-10 space-y-6">
 
         {/* Header */}
-        <header className="glass-dark rounded-3xl p-8 border border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <header className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black mb-1 tracking-tight flex items-center gap-3">
               <span className="text-3xl">🔔</span>
               <span>
                 Notifications
                 {unreadCount > 0 && (
-                  <span className="ml-3 text-sm font-black px-2.5 py-1 rounded-full bg-purple-500 text-white shadow-[0_0_12px_rgba(168,85,247,0.6)]">
+                  <span className="ml-3 text-sm font-black px-2.5 py-1 rounded-full bg-purple-600 text-white shadow-sm">
                     {unreadCount} new
                   </span>
                 )}
               </span>
             </h1>
-            <p className="text-slate-400 text-sm font-medium">Stay on top of your campus activity</p>
+            <p className="text-slate-500 text-sm font-medium">Stay on top of your campus activity</p>
           </div>
           <div className="flex items-center gap-3">
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="px-4 py-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 font-black text-xs uppercase tracking-widest hover:bg-purple-500/20 transition-colors"
+                className="px-4 py-2 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 font-black text-xs uppercase tracking-widest hover:bg-purple-100 transition-colors"
               >
                 Mark All Read
               </button>
             )}
-            <Link to="/student" className="px-5 py-2.5 rounded-full glass hover:bg-white/10 font-bold text-sm text-white border border-white/10 transition-all">
+            <Link to="/student" className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-50 font-bold text-sm text-slate-700 border border-slate-200 shadow-sm transition-all">
               ← Dashboard
             </Link>
           </div>
@@ -126,14 +126,14 @@ export default function StudentNotifications() {
                 onClick={() => setFilter(f.value)}
                 className={`px-4 py-2 rounded-full font-bold text-xs uppercase tracking-widest transition-all border flex items-center gap-2 ${
                   filter === f.value
-                    ? 'bg-purple-500/20 border-purple-500/40 text-purple-300'
-                    : 'border-white/10 text-slate-400 hover:bg-white/5 hover:text-white'
+                    ? 'bg-purple-50 border-purple-200 text-purple-700'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
                 {f.label}
                 {count > 0 && (
                   <span className={`px-1.5 py-0.5 rounded text-[9px] font-black ${
-                    filter === f.value ? 'bg-purple-500/40 text-purple-200' : 'bg-white/10 text-slate-400'
+                    filter === f.value ? 'bg-purple-200 text-purple-800' : 'bg-slate-100 text-slate-500'
                   }`}>
                     {count}
                   </span>
@@ -146,59 +146,59 @@ export default function StudentNotifications() {
         {/* Notifications list */}
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[30vh] gap-4">
-            <div className="w-10 h-10 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-            <span className="text-purple-400 text-sm font-bold uppercase tracking-widest animate-pulse">Loading...</span>
+            <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+            <span className="text-purple-600 text-sm font-bold uppercase tracking-widest animate-pulse">Loading...</span>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="glass-dark rounded-3xl p-16 text-center border border-white/5">
+          <div className="bg-white rounded-3xl p-16 text-center border border-slate-200 shadow-sm text-slate-900">
             <div className="text-6xl mb-4">🔕</div>
             <h3 className="text-xl font-black mb-2">
               {filter === 'unread' ? 'All caught up!' : 'No notifications'}
             </h3>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-500 text-sm">
               {filter === 'unread'
                 ? 'You have no unread notifications.'
                 : `No ${filter === 'all' ? '' : filter.replace(/_/g, ' ')} notifications yet.`}
             </p>
           </div>
         ) : (
-          <div className="glass-dark rounded-3xl border border-white/5 overflow-hidden divide-y divide-white/5">
+          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden divide-y divide-slate-100 shadow-sm">
             {filtered.map(n => {
               const cfg = TYPE_CONFIG[n.type] || { icon: '📌', label: n.type, color: 'slate' };
               return (
                 <button
                   key={n._id}
                   onClick={() => !n.read && markRead(n._id)}
-                  className={`w-full text-left px-6 py-4 hover:bg-white/5 transition-colors flex gap-4 items-start group ${
-                    !n.read ? 'bg-purple-500/5' : ''
+                  className={`w-full text-left px-6 py-4 hover:bg-slate-50 transition-colors flex gap-4 items-start group ${
+                    !n.read ? 'bg-purple-50' : ''
                   }`}
                 >
                   {/* Icon */}
-                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-${cfg.color}-500/10 border border-${cfg.color}-500/20 group-hover:scale-105 transition-transform`}>
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-${cfg.color}-50 border border-${cfg.color}-200 group-hover:scale-105 transition-transform`}>
                     {cfg.icon}
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3 mb-1">
-                      <p className={`text-sm font-black leading-tight ${!n.read ? 'text-white' : 'text-slate-300'}`}>
+                      <p className={`text-sm font-black leading-tight ${!n.read ? 'text-slate-900' : 'text-slate-600'}`}>
                         {n.title}
                       </p>
                       {!n.read && (
-                        <span className="shrink-0 w-2 h-2 rounded-full bg-purple-400 mt-1.5 shadow-[0_0_6px_rgba(168,85,247,0.8)]" />
+                        <span className="shrink-0 w-2 h-2 rounded-full bg-purple-600 mt-1.5 shadow-sm" />
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed mb-2">{n.message}</p>
+                    <p className="text-xs text-slate-500 leading-relaxed mb-2">{n.message}</p>
                     <div className="flex items-center gap-3 flex-wrap">
-                      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-${cfg.color}-500/10 text-${cfg.color}-400 border-${cfg.color}-500/20`}>
+                      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded border bg-${cfg.color}-50 text-${cfg.color}-700 border-${cfg.color}-200`}>
                         {cfg.label}
                       </span>
-                      <span className="text-[10px] text-slate-600">{fmt(n.createdAt)}</span>
+                      <span className="text-[10px] text-slate-400">{fmt(n.createdAt)}</span>
                       {n.event && (
                         <Link
                           to={`/events/${n.event._id || n.event}`}
                           onClick={e => e.stopPropagation()}
-                          className="text-[10px] font-bold text-blue-400 hover:text-blue-300 uppercase tracking-widest"
+                          className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest"
                         >
                           View Event →
                         </Link>

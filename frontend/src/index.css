@@ -3,22 +3,55 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --bg: #f8fafc;              /* slate-50 */
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;       /* slate-100 */
+    --border: #e2e8f0;          /* slate-200 */
+    --text: #0f172a;            /* slate-900 */
+    --text-secondary: #475569;  /* slate-600 */
+    --muted: #64748b;           /* slate-500 */
+
+    /* Brand (matches your screenshot’s blue theme) */
+    --primary: #2563eb;         /* blue-600 */
+    --primary-2: #1d4ed8;       /* blue-700 */
+    --primary-soft: rgba(37, 99, 235, 0.10);
+    --ring: rgba(37, 99, 235, 0.35);
+
+    --radius-xl: 20px;
+    --shadow-soft: 0 10px 30px rgba(2, 6, 23, 0.06);
+  }
+
   body {
-    @apply bg-slate-950 text-slate-100 antialiased font-sans;
+    @apply antialiased font-sans;
+    background: var(--bg);
+    color: var(--text);
   }
 }
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-600;
   }
 
   .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+    @apply bg-white/70 backdrop-blur-xl border border-slate-200;
   }
 
   .glass-dark {
     @apply bg-black/30 backdrop-blur-xl border border-white/10;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-600;
+  }
+
+  .app-card {
+    @apply bg-white border border-slate-200 rounded-3xl shadow-sm;
+  }
+
+  .app-card-hover {
+    @apply hover:shadow-md transition-shadow;
   }
 }
 

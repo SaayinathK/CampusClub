@@ -162,18 +162,18 @@ const Profile = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-32 pb-20 bg-[#0a0a0a] text-white px-4 md:px-8 relative overflow-hidden">
+    <div className="min-h-screen pt-32 pb-20 bg-slate-50 text-slate-900 px-4 md:px-8 relative overflow-hidden">
       {/* Background Glows */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20 z-0">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-50 z-0">
         <motion.div
           animate={{ x: [0, 30, 0], y: [0, -30, 0], scale: [1, 1.05, 1] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-600 rounded-full blur-[150px]"
+          className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-300/30 rounded-full blur-[150px]"
         />
         <motion.div
           animate={{ x: [0, -30, 0], y: [0, 30, 0], scale: [1, 1.05, 1] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-purple-600 rounded-full blur-[150px]"
+          className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-purple-300/30 rounded-full blur-[150px]"
         />
       </div>
 
@@ -183,16 +183,16 @@ const Profile = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md"
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-[#111] border border-white/10 p-8 rounded-[2.5rem] w-full max-w-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
+              className="bg-white border border-slate-200 p-8 rounded-[2.5rem] w-full max-w-xl shadow-xl relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
-              <h2 className="text-3xl font-black uppercase tracking-tighter italic mb-8">Add <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Security</span></h2>
+              <h2 className="text-3xl font-black uppercase tracking-tighter italic mb-8 text-slate-900">Add <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Security</span></h2>
 
               <div className="mb-8 overflow-x-auto pb-4 scrollbar-hide">
                 <div className="flex gap-4 min-w-max">
@@ -205,18 +205,18 @@ const Profile = () => {
                     <button
                       key={p.id}
                       onClick={() => setNewCard({ ...newCard, provider: p.id })}
-                      className={`h-16 w-28 rounded-2xl flex items-center justify-center transition-all bg-gradient-to-br ${newCard.provider === p.id
-                        ? `${p.color} ring-2 ring-offset-4 ring-offset-[#111] ring-blue-500 scale-105 shadow-[0_0_20px_rgba(59,130,246,0.5)]`
-                        : 'from-white/5 to-white/5 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 hover:from-white/10 hover:to-white/5'
+                        className={`h-16 w-28 rounded-2xl flex items-center justify-center transition-all bg-gradient-to-br ${newCard.provider === p.id
+                        ? `${p.color} ring-2 ring-offset-2 ring-offset-white ring-blue-500 scale-105 shadow-md`
+                        : 'from-slate-100 to-slate-200 opacity-70 grayscale hover:grayscale-0 hover:opacity-100'
                         }`}
                     >
                       {p.isMC && newCard.provider !== p.id ? (
                         <div className="flex -space-x-3">
-                          <div className="w-6 h-6 rounded-full bg-white/40" />
-                          <div className="w-6 h-6 rounded-full bg-white/60" />
+                          <div className="w-6 h-6 rounded-full bg-slate-400/40" />
+                          <div className="w-6 h-6 rounded-full bg-slate-400/60" />
                         </div>
                       ) : (
-                        <span className="text-xs font-black uppercase tracking-widest text-white">{p.label}</span>
+                        <span className={`text-xs font-black uppercase tracking-widest ${newCard.provider === p.id ? 'text-white' : 'text-slate-600'}`}>{p.label}</span>
                       )}
                     </button>
                   ))}
@@ -269,7 +269,7 @@ const Profile = () => {
                   value={newCard.number}
                   onChange={handleCardInputChange}
                   placeholder="Card Number"
-                  className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all shadow-inner text-white placeholder:text-gray-600"
+                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
                   required
                 />
                 <input
@@ -278,7 +278,7 @@ const Profile = () => {
                   value={newCard.name}
                   onChange={handleCardInputChange}
                   placeholder="Card Holder Name"
-                  className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all shadow-inner text-white placeholder:text-gray-600"
+                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
                   required
                 />
                 <div className="grid grid-cols-2 gap-4">
@@ -288,21 +288,21 @@ const Profile = () => {
                     value={newCard.expiry}
                     onChange={handleCardInputChange}
                     placeholder="MM/YY"
-                    className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all shadow-inner text-white placeholder:text-gray-600"
+                    className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
                     required
                   />
                   <input
                     type="password"
                     name="cvv"
                     maxLength="3"
-                    className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500/50 outline-none transition-all shadow-inner text-white placeholder:text-gray-600"
+                    className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
                     placeholder="CVV"
                     required
                   />
                 </div>
-                <div className="flex gap-4 mt-8 pt-4 border-t border-white/5">
-                  <button type="button" onClick={() => setShowAddCard(false)} className="flex-1 font-bold uppercase tracking-widest text-xs py-4 text-gray-500 hover:text-white transition-colors">Cancel</button>
-                  <button type="submit" className="flex-[2] bg-white text-black hover:bg-gray-200 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all active:scale-95">Verify & Add</button>
+                <div className="flex gap-4 mt-8 pt-4 border-t border-slate-100">
+                  <button type="button" onClick={() => setShowAddCard(false)} className="flex-1 font-bold uppercase tracking-widest text-xs py-4 text-slate-500 hover:text-slate-900 transition-colors">Cancel</button>
+                  <button type="submit" className="flex-[2] bg-blue-600 text-white hover:bg-blue-700 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-md transition-all active:scale-95">Verify & Add</button>
                 </div>
               </form>
             </motion.div>
@@ -320,9 +320,9 @@ const Profile = () => {
             >
               My <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-lg">Dashboard</span>
             </motion.h1>
-            <p className="text-gray-400 uppercase tracking-[0.2em] text-xs font-bold">Manage your identity and assets</p>
+            <p className="text-slate-500 uppercase tracking-[0.2em] text-xs font-bold">Manage your identity and assets</p>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl font-bold uppercase tracking-widest text-xs transition-colors border border-red-500/20">
+          <button onClick={handleLogout} className="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold uppercase tracking-widest text-xs transition-colors border border-red-200">
             <LogOut size={16} /> Log Out
           </button>
         </header>
@@ -336,11 +336,11 @@ const Profile = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-4 px-6 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${activeTab === tab.id
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] border border-white/10'
-                    : 'bg-white/[0.02] border border-white/[0.05] text-gray-400 hover:bg-white/[0.05] hover:text-white'
+                    ? 'bg-blue-600 text-white shadow-md border border-transparent'
+                    : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 shadow-sm'
                     }`}
                 >
-                  <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'text-gray-500'} />
+                  <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'text-slate-500'} />
                   {tab.label}
                 </button>
               ))}
@@ -348,7 +348,7 @@ const Profile = () => {
           </aside>
 
           {/* Main Content Area */}
-          <main className="lg:w-3/4 bg-white/[0.02] border border-white/[0.05] rounded-[2.5rem] p-8 md:p-12 backdrop-blur-3xl shadow-2xl min-h-[600px] relative overflow-hidden">
+          <main className="lg:w-3/4 bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-lg min-h-[600px] relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/50 via-purple-500/50 to-pink-500/50" />
 
             <AnimatePresence mode="wait">
@@ -362,7 +362,7 @@ const Profile = () => {
                 >
                   <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
                     <div className="relative group">
-                      <div className="w-48 h-48 rounded-full overflow-hidden border-[6px] border-[#161616] bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+                      <div className="w-48 h-48 rounded-full overflow-hidden border-[6px] border-white bg-slate-100 flex items-center justify-center shadow-md">
                         {profilePhoto ? (
                           <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
@@ -397,24 +397,24 @@ const Profile = () => {
                            userData.role === 'admin' ? 'System Admin' : 'External Participant'}
                         </span>
                       </div>
-                      <p className="text-gray-400 font-bold tracking-widest uppercase text-sm mb-8 flex items-center justify-center md:justify-start gap-2">
+                      <p className="text-slate-500 font-bold tracking-widest uppercase text-sm mb-8 flex items-center justify-center md:justify-start gap-2">
                         <Mail size={16} className="text-blue-500" /> {userData.email}
                       </p>
                       <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                        <button className="px-8 py-3.5 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-gray-200 shadow-xl shadow-white/5 active:scale-95">Edit Identity</button>
-                        <button className="px-8 py-3.5 bg-[#161616] border border-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-inner">Account Settings</button>
+                        <button className="px-8 py-3.5 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95">Edit Identity</button>
+                        <button className="px-8 py-3.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm text-slate-900">Account Settings</button>
                       </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] space-y-4 hover:border-white/10 transition-colors">
-                      <div className="flex items-center gap-3 text-blue-400 mb-4">
+                    <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200 space-y-4 hover:bg-white transition-colors shadow-sm">
+                      <div className="flex items-center gap-3 text-blue-700 mb-4">
                         <Shield size={24} />
                         <h3 className="font-black uppercase tracking-widest text-sm">Security Level</h3>
                       </div>
-                      <p className="text-gray-400 text-sm leading-relaxed mb-4">Account secured with verified email token and encoded credentials.</p>
-                      <div className="h-2 w-full bg-[#161616] rounded-full overflow-hidden shadow-inner">
+                      <p className="text-slate-600 text-sm leading-relaxed mb-4 font-medium">Account secured with verified email token and encoded credentials.</p>
+                      <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
                         <motion.div
                           initial={{ width: 0 }}
                           animate={{ width: "100%" }}
@@ -423,13 +423,13 @@ const Profile = () => {
                         />
                       </div>
                     </div>
-                    <div className="p-8 rounded-3xl bg-white/[0.02] border border-white/[0.05] space-y-4 hover:border-white/10 transition-colors">
-                      <div className="flex items-center gap-3 text-purple-400 mb-4">
+                    <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200 space-y-4 hover:bg-white transition-colors shadow-sm">
+                      <div className="flex items-center gap-3 text-indigo-700 mb-4">
                         <Calendar size={24} />
                         <h3 className="font-black uppercase tracking-widest text-sm">Account Status</h3>
                       </div>
-                      <p className="text-gray-400 text-sm leading-relaxed mb-4">Successfully authenticated. You have full access to dashboard features.</p>
-                      <div className="inline-block px-4 py-2 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-black uppercase tracking-widest rounded-lg">
+                      <p className="text-slate-600 text-sm leading-relaxed mb-4 font-medium">Successfully authenticated. You have full access to dashboard features.</p>
+                      <div className="inline-block px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black uppercase tracking-widest rounded-lg">
                         Active Passport
                       </div>
                     </div>
@@ -445,20 +445,20 @@ const Profile = () => {
                   exit={{ opacity: 0, y: -10 }}
                   className="space-y-8"
                 >
-                  <div className="flex justify-between items-center mb-8 pb-6 border-b border-white/5">
+                  <div className="flex justify-between items-center mb-8 pb-6 border-b border-slate-200">
                     <h2 className="text-2xl font-black uppercase tracking-tighter">Your Cards</h2>
                     <button
                       onClick={() => setShowAddCard(true)}
-                      className="flex items-center gap-2 px-6 py-3 bg-white text-black hover:bg-gray-200 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md"
                     >
                       <Plus size={16} /> Add Card
                     </button>
                   </div>
 
                   {cards.length === 0 ? (
-                    <div className="text-center py-20 border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
-                      <CreditCard size={48} className="mx-auto text-gray-600 mb-4" />
-                      <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">No payment methods added</p>
+                    <div className="text-center py-20 border border-dashed border-slate-300 rounded-3xl bg-slate-50">
+                      <CreditCard size={48} className="mx-auto text-slate-400 mb-4" />
+                      <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">No payment methods added</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -475,7 +475,7 @@ const Profile = () => {
                               </div>
                               <button
                                 onClick={() => deleteCard(card.id)}
-                                className="p-3 bg-[#111] hover:bg-red-500/20 text-gray-500 hover:text-red-500 rounded-xl transition-all border border-white/5 hover:border-red-500/30"
+                                className="p-3 bg-white text-slate-500 hover:text-red-500 rounded-xl transition-all border border-slate-200 hover:border-red-200 shadow-sm"
                               >
                                 <Trash2 size={18} />
                               </button>
@@ -486,11 +486,11 @@ const Profile = () => {
                     </div>
                   )}
 
-                  <div className="mt-12 p-6 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex items-start gap-4">
-                    <Shield className="text-blue-400 shrink-0" size={24} />
+                  <div className="mt-12 p-6 rounded-2xl bg-blue-50 border border-blue-100 flex items-start gap-4">
+                    <Shield className="text-blue-500 shrink-0" size={24} />
                     <div>
-                      <h3 className="text-sm font-black uppercase tracking-widest text-blue-400 mb-2">Maximum Security</h3>
-                      <p className="text-xs text-gray-400 leading-relaxed font-medium">All payment details are encrypted using banking-grade security protocols. We never store your full card numbers directly on our servers.</p>
+                      <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">Maximum Security</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed font-medium">All payment details are encrypted using banking-grade security protocols. We never store your full card numbers directly on our servers.</p>
                     </div>
                   </div>
                 </motion.div>
@@ -505,15 +505,15 @@ const Profile = () => {
                   className="space-y-10"
                 >
                   <div
-                    className="w-full border-2 border-dashed border-white/10 rounded-[2.5rem] p-12 flex flex-col items-center justify-center gap-4 hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group cursor-pointer"
+                    className="w-full border-2 border-dashed border-slate-300 rounded-[2.5rem] p-12 flex flex-col items-center justify-center gap-4 hover:border-blue-400 hover:bg-slate-50 transition-all group cursor-pointer"
                     onClick={() => receiptInputRef.current.click()}
                   >
-                    <div className="p-5 bg-[#161616] text-blue-400 rounded-2xl group-hover:scale-110 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-lg border border-white/5">
+                    <div className="p-5 bg-white text-blue-500 rounded-2xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm border border-slate-200">
                       <Upload size={32} />
                     </div>
                     <div className="text-center mt-2">
-                      <p className="font-black uppercase tracking-widest text-sm mb-2 text-white">Upload New Document</p>
-                      <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Drop PDF or Images here (Max 5MB)</p>
+                      <p className="font-black uppercase tracking-widest text-sm mb-2 text-slate-900">Upload New Document</p>
+                      <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Drop PDF or Images here (Max 5MB)</p>
                     </div>
                     <input
                       type="file"
@@ -525,20 +525,20 @@ const Profile = () => {
                   </div>
 
                   <div>
-                    <h2 className="text-xl font-black uppercase tracking-tighter mb-6 flex items-center gap-3">
-                      <FileText className="text-gray-500" /> Document Log
+                    <h2 className="text-xl font-black uppercase tracking-tighter mb-6 flex items-center gap-3 text-slate-900">
+                      <FileText className="text-slate-400" /> Document Log
                     </h2>
                     <div className="space-y-4">
                       {receipts.map((receipt) => (
-                        <div key={receipt._id} className="p-6 rounded-3xl bg-[#161616] border border-white/5 flex items-center justify-between group hover:border-white/20 transition-all">
+                        <div key={receipt._id} className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center justify-between group hover:border-blue-300 transition-all">
                           <div className="flex items-center gap-5">
-                            <div className={`p-4 rounded-xl shadow-inner ${receipt.status === 'Verified' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
+                            <div className={`p-4 rounded-xl shadow-sm border ${receipt.status === 'Verified' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
                               {receipt.status === 'Verified' ? <CheckCircle2 size={24} /> : <FileText size={24} />}
                             </div>
                             <div>
-                              <p className="font-bold text-sm text-white mb-1">{receipt.originalName}</p>
-                              <p className="text-[10px] uppercase font-black text-gray-500 tracking-widest">
-                                {new Date(receipt.uploadDate).toLocaleDateString()} • <span className={receipt.status === 'Verified' ? 'text-green-500/70' : 'text-blue-500/70'}>{receipt.status}</span>
+                              <p className="font-bold text-sm text-slate-900 mb-1">{receipt.originalName}</p>
+                              <p className="text-[10px] uppercase font-black text-slate-500 tracking-widest">
+                                {new Date(receipt.uploadDate).toLocaleDateString()} • <span className={receipt.status === 'Verified' ? 'text-green-600' : 'text-blue-600'}>{receipt.status}</span>
                               </p>
                             </div>
                           </div>
@@ -548,7 +548,7 @@ const Profile = () => {
                                   e.stopPropagation();
                                   handleDownloadReceipt(receipt);
                                 }}
-                                className="p-4 bg-white/5 hover:bg-white text-gray-400 hover:text-black rounded-2xl transition-all active:scale-95 shadow-sm"
+                                className="p-4 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-2xl transition-all active:scale-95 shadow-sm"
                                 title="Download Document"
                               >
                                 <Download size={20} />
@@ -558,7 +558,7 @@ const Profile = () => {
                                   e.stopPropagation();
                                   deleteReceipt(receipt._id);
                                 }}
-                                className="p-4 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-500 rounded-2xl transition-all active:scale-95 shadow-sm"
+                                className="p-4 bg-slate-50 border border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500 rounded-2xl transition-all active:scale-95 shadow-sm"
                                 title="Delete Document"
                               >
                                 <Trash2 size={20} />

@@ -46,18 +46,18 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-20 bg-[#0a0a0a] text-white px-4 md:px-6 overflow-hidden relative flex flex-col justify-center">
+    <div className="min-h-screen pt-32 pb-20 bg-slate-50 text-slate-900 px-4 md:px-6 overflow-hidden relative flex flex-col justify-center">
       {/* Dynamic Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{ x: [0, 40, 0], y: [0, -40, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[10%] right-[15%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px]"
+          className="absolute top-[10%] right-[15%] w-[40%] h-[40%] bg-blue-300/30 rounded-full blur-[120px]"
         />
         <motion.div
           animate={{ x: [0, -40, 0], y: [0, 40, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-[10%] left-[15%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px]"
+          className="absolute bottom-[10%] left-[15%] w-[40%] h-[40%] bg-purple-300/30 rounded-full blur-[120px]"
         />
       </div>
 
@@ -67,7 +67,7 @@ const SignIn = () => {
             initial={{ scale: 0, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', damping: 15 }}
-            className="w-20 h-20 bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30 text-blue-400 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+            className="w-20 h-20 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm"
           >
             <LogIn size={36} />
           </motion.div>
@@ -76,14 +76,14 @@ const SignIn = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-6xl font-black mb-3 uppercase tracking-tighter"
           >
-            <span className="text-white drop-shadow-lg">Welcome </span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">Back</span>
+            <span className="text-slate-900 drop-shadow-sm">Welcome </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600">Back</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-gray-400 font-bold uppercase tracking-[0.3em] text-xs"
+            className="text-slate-500 font-bold uppercase tracking-[0.3em] text-xs"
           >
             Access your hub account
           </motion.p>
@@ -93,32 +93,32 @@ const SignIn = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="rounded-[2.5rem] bg-white/[0.02] border border-white/[0.05] p-10 backdrop-blur-3xl shadow-2xl relative overflow-hidden"
+          className="rounded-[2.5rem] bg-white border border-slate-200 p-10 shadow-lg relative overflow-hidden"
         >
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
 
           <form onSubmit={handleSignIn} className="space-y-6 relative z-10">
             {redirectMessage && (
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl px-4 py-3 text-blue-300 text-xs font-bold tracking-wide flex items-center gap-2">
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 text-blue-700 text-xs font-bold tracking-wide flex items-center gap-2">
                 <Info size={14} className="shrink-0" />
                 {redirectMessage}
               </div>
             )}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3 text-red-400 text-xs font-bold tracking-wide">
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 text-rose-700 text-xs font-bold tracking-wide">
                 {error}
               </div>
             )}
             <div className="space-y-2 group">
-              <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-blue-400 transition-colors ml-1">Email Address</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-blue-600 transition-colors ml-1">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
                 <input
                   type="email"
                   name="email"
                   required
                   placeholder="name@example.com"
-                  className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500/50 focus:bg-[#1a1a1a] transition-all outline-none text-white shadow-inner placeholder:text-gray-600"
+                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-900 shadow-sm placeholder:text-slate-400"
                   onChange={handleInputChange}
                 />
               </div>
@@ -126,17 +126,17 @@ const SignIn = () => {
 
             <div className="space-y-2 group">
               <div className="flex justify-between items-center ml-1">
-                <label className="text-xs font-black uppercase tracking-widest text-gray-500 group-focus-within:text-purple-400 transition-colors">Password</label>
-                <button type="button" className="text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-purple-400 transition-colors">Forgot?</button>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-purple-600 transition-colors">Password</label>
+                <button type="button" className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-purple-600 transition-colors">Forgot?</button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-400 transition-colors" size={20} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-600 transition-colors" size={20} />
                 <input
                   type="password"
                   name="password"
                   required
                   placeholder="••••••••"
-                  className="w-full bg-[#161616] border border-white/5 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 focus:bg-[#1a1a1a] transition-all outline-none text-white shadow-inner placeholder:text-gray-600"
+                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all outline-none text-slate-900 shadow-sm placeholder:text-slate-400"
                   onChange={handleInputChange}
                 />
               </div>
@@ -147,15 +147,15 @@ const SignIn = () => {
               whileTap={{ scale: 0.98 }}
               disabled={loading}
               type="submit"
-              className={`w-full bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-gray-200 transition-all flex items-center justify-center gap-3 group mt-8 shadow-[0_0_20px_rgba(255,255,255,0.1)] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-3 group mt-8 shadow-md ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Authenticating...' : 'Sign In'} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </motion.button>
           </form>
 
           <div className="mt-10 text-center">
-            <p className="text-gray-500 font-medium text-xs tracking-widest uppercase">
-              New here? <Link to="/signup" className="text-white font-bold hover:text-blue-400 transition-colors ml-2 border-b border-white/20 pb-1 hover:border-blue-400/50">Create Account</Link>
+            <p className="text-slate-500 font-medium text-xs tracking-widest uppercase">
+              New here? <Link to="/signup" className="text-blue-600 font-bold hover:text-blue-700 transition-colors ml-2 border-b border-blue-200 pb-1 hover:border-blue-400">Create Account</Link>
             </p>
           </div>
         </motion.div>

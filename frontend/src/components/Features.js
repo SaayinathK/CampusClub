@@ -1,12 +1,12 @@
 import React from 'react';
 
 const FeatureCard = ({ icon, title, description }) => (
-    <div className="p-8 rounded-2xl glass-dark border border-white/5 hover:border-blue-500/30 transition-all hover:-translate-y-2 group group">
-        <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:bg-blue-500/20 transition-colors">
+    <div className="p-8 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all hover:-translate-y-2 group group">
+        <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6 group-hover:bg-blue-100 transition-colors">
             {icon}
         </div>
-        <h3 className="text-xl font-bold mb-4">{title}</h3>
-        <p className="text-gray-400 leading-relaxed">{description}</p>
+        <h3 className="text-xl font-bold mb-4 text-slate-900">{title}</h3>
+        <p className="text-slate-600 leading-relaxed">{description}</p>
     </div>
 );
 
@@ -45,8 +45,8 @@ const Features = () => {
         <section id="features" className="py-24 relative overflow-hidden">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Why Choose <span className="text-gradient">Club Hub?</span></h2>
-                    <p className="text-gray-400 max-w-xl mx-auto">Everything you need to make your campus life more engaging and organized.</p>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 text-slate-900">Why Choose <span className="text-gradient">Club Hub?</span></h2>
+                    <p className="text-slate-600 max-w-xl mx-auto">Everything you need to make your campus life more engaging and organized.</p>
                 </div>
                 <div className="grid md:grid-cols-3 gap-8">
                     {features.map((feature, index) => (

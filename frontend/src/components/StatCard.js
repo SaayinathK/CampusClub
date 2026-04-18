@@ -8,29 +8,27 @@ import React from 'react';
 export default function StatCard({ label, value, color, icon, trend, onClick }) {
   return (
     <div
-      className="stat-card"
+      className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
       onClick={onClick}
       style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div className="flex items-start justify-between">
         <div>
-          <div className="stat-value" style={{ color: color || 'var(--purple-light)' }}>{value}</div>
-          <div className="stat-label">{label}</div>
+          <div className="text-3xl font-black mb-1" style={{ color: color || '#3b82f6' }}>{value}</div>
+          <div className="text-xs font-black uppercase tracking-widest text-slate-500">{label}</div>
         </div>
         {icon && (
-          <div style={{
-            width: 40, height: 40, borderRadius: 10,
-            background: `${color || 'var(--purple-primary)'}20`,
-            border: `1px solid ${color || 'var(--purple-primary)'}40`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.2rem',
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{
+            background: `${color || '#3b82f6'}20`,
+            border: `1px solid ${color || '#3b82f6'}40`,
+            color: color || '#3b82f6'
           }}>
             {icon}
           </div>
         )}
       </div>
       {trend !== undefined && (
-        <div style={{ marginTop: 10, fontSize: '0.72rem', color: trend >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+        <div className={`mt-4 text-[10px] font-bold uppercase tracking-wider ${trend >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
           {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% from last month
         </div>
       )}

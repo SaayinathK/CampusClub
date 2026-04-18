@@ -45,19 +45,19 @@ const committees = [
 
 const Committees = () => {
     return (
-        <section id="committees" className="py-24 relative bg-slate-900/50">
+        <section id="committees" className="py-24 relative bg-slate-50">
             <div className="container mx-auto px-6">
                 <div className="text-center mb-16">
-                    <div className="inline-block mb-4 px-4 py-1 rounded-full glass text-blue-400 text-sm font-medium border border-blue-500/20">
+                    <div className="inline-block mb-4 px-4 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-200">
                         👥 The People Behind the Scenes
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-bold mb-4">Campus <span className="text-gradient">Committees</span></h2>
-                    <p className="text-gray-400 max-w-2xl mx-auto">Meet the dedicated teams working tirelessly to make every campus event a memorable success.</p>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-4 text-slate-900">Campus <span className="text-gradient">Committees</span></h2>
+                    <p className="text-slate-600 max-w-2xl mx-auto">Meet the dedicated teams working tirelessly to make every campus event a memorable success.</p>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {committees.map((committee, index) => (
-                        <div key={index} className="group relative p-8 rounded-3xl glass-dark border border-white/5 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2">
+                        <div key={index} className="group relative p-8 rounded-3xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2">
                             <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></div>
                             </div>
@@ -66,13 +66,13 @@ const Committees = () => {
                                 {committee.icon}
                             </div>
 
-                            <h3 className="text-xl font-bold mb-1 group-hover:text-blue-400 transition-colors">{committee.name}</h3>
-                            <div className="text-sm font-medium text-blue-500 mb-4">{committee.role}</div>
-                            <p className="text-gray-400 text-sm leading-relaxed">{committee.description}</p>
+                            <h3 className="text-xl font-bold mb-1 text-slate-900 group-hover:text-blue-600 transition-colors">{committee.name}</h3>
+                            <div className="text-sm font-medium text-blue-600 mb-4">{committee.role}</div>
+                            <p className="text-slate-600 text-sm leading-relaxed">{committee.description}</p>
 
-                            <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                                <span className="text-xs text-gray-500">Learn More</span>
-                                <svg className="w-5 h-5 text-gray-500 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">
+                                <span className="text-xs text-slate-500">Learn More</span>
+                                <svg className="w-5 h-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
                             </div>

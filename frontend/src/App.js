@@ -43,11 +43,11 @@ const Home = ({ events }) => (
     <EventCarousel events={events} />
     <Features />
     <Committees />
-    <section className="py-24 bg-gradient-to-b from-transparent to-blue-900/10">
+    <section className="py-24 bg-gradient-to-b from-transparent to-blue-100">
       <div className="container mx-auto px-6 text-center">
-        <h2 className="text-4xl md:text-6xl font-black mb-8 uppercase tracking-widest leading-tight font-display">Ready to boost your campus life?</h2>
+        <h2 className="text-4xl md:text-6xl font-black mb-8 uppercase tracking-widest leading-tight font-display text-slate-900">Ready to boost your campus life?</h2>
         <Link to="/signup">
-          <button className="px-10 py-4 rounded-xl bg-white text-black font-black text-lg hover:bg-gray-200 transition-all active:scale-95 shadow-2xl shadow-white/10 uppercase tracking-[0.2em] font-display">
+          <button className="px-10 py-4 rounded-xl bg-blue-600 text-white font-black text-lg hover:bg-blue-700 transition-all active:scale-95 shadow-2xl shadow-blue-500/30 uppercase tracking-[0.2em] font-display">
             Join Club Hub Now
           </button>
         </Link>
@@ -62,7 +62,7 @@ function App() {
   return (
     <AuthProvider>
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
       <div className="min-h-screen">
         <Navbar />
         <main>

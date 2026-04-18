@@ -39,7 +39,7 @@ const Navbar = () => {
 
     return (
         <>
-        <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'py-4 glass-dark shadow-2xl border-b border-white/5' : 'py-6 bg-transparent'}`}>
+        <nav className={`fixed w-full z-50 transition-all duration-500 ${isScrolled ? 'py-4 glass shadow-sm border-b border-gray-200' : 'py-6 bg-transparent'}`}>
             <div className="container mx-auto px-6 flex justify-between items-center">
                 <Link to="/" className="flex items-center gap-3 group">
                     <div className="relative">
@@ -49,7 +49,7 @@ const Navbar = () => {
                         <div className="absolute -inset-1 bg-blue-500/20 blur opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-gray-500 uppercase tracking-tighter leading-none">
+                        <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-slate-500 uppercase tracking-tighter leading-none">
                             Club Hub
                         </span>
                         <span className="text-[9px] font-black uppercase tracking-[0.4em] text-blue-500 mt-1.5 opacity-80">
@@ -58,17 +58,17 @@ const Navbar = () => {
                     </div>
                 </Link>
 
-                <div className="hidden lg:flex items-center gap-10 uppercase font-black text-[10px] tracking-[0.25em] text-gray-400">
-                    <Link to="/" className="hover:text-white hover:translate-y-[-1px] transition-all duration-300">Home</Link>
-                    <Link to="/events" className="hover:text-white hover:translate-y-[-1px] transition-all duration-300 border-b border-transparent hover:border-blue-500/50 pb-1">Events</Link>
-                    <Link to="/clubs" className="hover:text-white hover:translate-y-[-1px] transition-all duration-300 border-b border-transparent hover:border-blue-500/50 pb-1">Clubs</Link>
+                <div className="hidden lg:flex items-center gap-10 uppercase font-black text-[10px] tracking-[0.25em] text-slate-500">
+                    <Link to="/" className="hover:text-slate-900 hover:translate-y-[-1px] transition-all duration-300">Home</Link>
+                    <Link to="/events" className="hover:text-slate-900 hover:translate-y-[-1px] transition-all duration-300 border-b border-transparent hover:border-blue-500/50 pb-1">Events</Link>
+                    <Link to="/clubs" className="hover:text-slate-900 hover:translate-y-[-1px] transition-all duration-300 border-b border-transparent hover:border-blue-500/50 pb-1">Clubs</Link>
 
-                    <div className="h-4 w-px bg-white/10 mx-2"></div>
+                    <div className="h-4 w-px bg-slate-200 mx-2"></div>
 
                     {!user ? (
                         <div className="flex items-center gap-4">
                             <Link to="/signin">
-                                <button className="px-8 py-3 rounded-2xl glass-dark border border-white/5 hover:bg-white/10 transition-all active:scale-95 text-white font-black uppercase tracking-widest text-[10px]">
+                                <button className="px-8 py-3 rounded-2xl glass border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-slate-800 font-black uppercase tracking-widest text-[10px]">
                                     Sign In
                                 </button>
                             </Link>
@@ -82,19 +82,19 @@ const Navbar = () => {
                     ) : (
                         <div className="flex items-center gap-6 animate-in fade-in slide-in-from-right-4 duration-700">
                             <NotificationBell />
-                            <Link to={dashboardRoute || '/profile'} className="flex items-center gap-3 group relative px-4 py-2 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/50 transition-all">
+                            <Link to={dashboardRoute || '/profile'} className="flex items-center gap-3 group relative px-4 py-2 rounded-2xl bg-slate-50 border border-slate-200 hover:border-blue-500/50 transition-all">
                                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
                                     <span className="text-[12px] text-white font-black">{(user.name || user.username || '?')[0].toUpperCase()}</span>
                                 </div>
                                 <div className="flex flex-col items-start leading-none">
                                     <span className="text-blue-400 text-[8px] font-black tracking-widest uppercase mb-1">{ROLE_LABELS[user.role] || user.role}</span>
-                                    <span className="text-white font-black tracking-widest uppercase text-[10px]">{user.name || user.username}</span>
+                                    <span className="text-slate-800 font-black tracking-widest uppercase text-[10px]">{user.name || user.username}</span>
                                 </div>
                             </Link>
                             
                             <button
                                 onClick={() => setShowLogoutModal(true)}
-                                className="group p-2.5 rounded-xl bg-white/5 hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-all border border-transparent hover:border-red-500/20"
+                                className="group p-2.5 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-500 transition-all border border-transparent hover:border-red-200"
                                 title="Sign Out"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ const Navbar = () => {
                 </div>
 
                 {/* Mobile Menu Toggle */}
-                <button className="lg:hidden text-white p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                <button className="lg:hidden text-slate-800 p-2 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
                     </svg>
@@ -118,7 +118,7 @@ const Navbar = () => {
         {showLogoutModal && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center">
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)} />
-                <div className="relative bg-[#0d1117] border border-white/10 rounded-3xl p-8 w-full max-w-sm mx-4 shadow-2xl shadow-black/50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="relative bg-white border border-slate-200 rounded-3xl p-8 w-full max-w-sm mx-4 shadow-xl shadow-black/5 animate-in fade-in zoom-in-95 duration-200">
                     <div className="flex flex-col items-center text-center gap-4">
                         <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
                             <svg className="w-7 h-7 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,16 +126,16 @@ const Navbar = () => {
                             </svg>
                         </div>
                         <div>
-                            <h3 className="text-white font-black uppercase tracking-widest text-sm mb-2">Sign Out?</h3>
+                            <h3 className="text-slate-900 font-black uppercase tracking-widest text-sm mb-2">Sign Out?</h3>
                             <p className="text-gray-500 text-xs font-medium leading-relaxed">
-                                You're signed in as <span className="text-white font-bold">{user?.name || user?.username}</span>.<br />
+                                You're signed in as <span className="text-slate-900 font-bold">{user?.name || user?.username}</span>.<br />
                                 Are you sure you want to sign out?
                             </p>
                         </div>
                         <div className="flex gap-3 w-full mt-2">
                             <button
                                 onClick={() => setShowLogoutModal(false)}
-                                className="flex-1 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-400 hover:text-white font-black uppercase text-[10px] tracking-widest transition-all active:scale-95"
+                                className="flex-1 py-3 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 font-black uppercase text-[10px] tracking-widest transition-all active:scale-95"
                             >
                                 Cancel
                             </button>

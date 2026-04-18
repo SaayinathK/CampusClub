@@ -12,32 +12,28 @@ import {
   Search,
   Shield,
   Menu,
-  ChevronDown,
   Sparkles,
-  UserCircle,
   Award,
-  Settings,
-  HelpCircle,
-  BellRing,
-  Star,
-  Compass,
-  TrendingUp
+  TrendingUp,
+  Zap,
+  Globe,
+  Clock,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import NotificationBell from './NotificationBell';
+import Navbar from './Navbar';
 
 // ─── Nav config per role ──────────────────────────────────────────────────────
 const NAV = {
   admin: [
-    { to: '/admin', label: 'Dashboard', icon: LayoutGrid, desc: 'Overview & analytics', badge: null },
-    { to: '/admin/users', label: 'Users', icon: Users, desc: 'Manage accounts', badge: null },
-    { to: '/admin/communities', label: 'Communities', icon: Building2, desc: 'Clubs & groups', badge: null },
-    { to: '/admin/events', label: 'Events', icon: CalendarDays, desc: 'Schedule & manage', badge: '6' },
+    { to: '/admin', label: 'Dashboard', icon: LayoutGrid, desc: 'Overview & analytics', badge: null, color: 'from-blue-500 to-sky-500' },
+    { to: '/admin/users', label: 'Users', icon: Users, desc: 'Manage accounts', badge: null, color: 'from-blue-600 to-cyan-500' },
+    { to: '/admin/communities', label: 'Communities', icon: Building2, desc: 'Clubs & groups', badge: null, color: 'from-blue-700 to-indigo-500' },
+    { to: '/admin/events', label: 'Events', icon: CalendarDays, desc: 'Schedule & manage', badge: '12', color: 'from-sky-500 to-blue-500' },
   ],
   community_admin: [
-    { to: '/community-admin', label: 'Dashboard', icon: LayoutGrid, desc: 'Community stats', badge: null },
-    { to: '/community-admin/members', label: 'Members', icon: Users, desc: 'Member management', badge: null },
-    { to: '/community-admin/events', label: 'Events', icon: CalendarDays, desc: 'Community events', badge: '3' },
+    { to: '/community-admin', label: 'Dashboard', icon: LayoutGrid, desc: 'Community stats', badge: null, color: 'from-blue-500 to-sky-500' },
+    { to: '/community-admin/members', label: 'Members', icon: Users, desc: 'Member management', badge: null, color: 'from-blue-600 to-cyan-500' },
+    { to: '/community-admin/events', label: 'Events', icon: CalendarDays, desc: 'Community events', badge: '5', color: 'from-sky-500 to-blue-500' },
   ],
 };
 
@@ -47,13 +43,13 @@ const ROLE_LABEL = {
 };
 
 const ROLE_BADGE_COLOR = {
-  admin: 'from-blue-600 to-indigo-600',
-  community_admin: 'from-emerald-600 to-teal-600',
+  admin: 'from-blue-600 via-blue-500 to-cyan-600',
+  community_admin: 'from-cyan-500 via-blue-500 to-indigo-600',
 };
 
 // ─── Sidebar Nav Item Component ────────────────────────────────────────────────
 const SidebarNavItem = ({ item, isActive, collapsed, mobileOpen }) => {
-  const Icon = item.icon;
+  const Icon = item.icon || LayoutGrid;
   return (
     <NavLink
       to={item.to}
@@ -62,29 +58,50 @@ const SidebarNavItem = ({ item, isActive, collapsed, mobileOpen }) => {
         group relative flex items-center gap-4 rounded-xl transition-all duration-300
         ${collapsed && !mobileOpen ? 'justify-center py-3.5 px-0' : 'px-4 py-3'}
         ${isActive
-          ? 'bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-700 border-l-4 border-blue-500'
-          : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50/80'
+          ? 'bg-gradient-to-r from-blue-500/15 via-sky-500/10 to-cyan-500/15 text-blue-700 shadow-sm'
+          : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 hover:shadow-sm'
         }
       `}
     >
-      <Icon size={20} className={`shrink-0 transition-all duration-300 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'}`} />
+      <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`}>
+        <Icon size={20} className={`shrink-0 transition-all duration-300 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'}`} />
+        {isActive && (
+          <motion.div
+            layoutId="activeIndicator"
+            className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 opacity-20 -z-10"
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          />
+        )}
+      </div>
+      
       {(!collapsed || mobileOpen) && (
         <div className="flex-1 flex items-center justify-between">
-          <span className={`text-[13px] font-semibold tracking-tight ${isActive ? 'text-blue-700' : 'text-slate-700'}`}>
-            {item.label}
-          </span>
-          {item.badge && (
-            <span className="px-2 py-0.5 text-[9px] font-bold bg-rose-100 text-rose-600 rounded-full">
-              {item.badge}
+          <div>
+            <span className={`text-[13px] font-semibold tracking-tight ${isActive ? 'text-blue-700' : 'text-slate-700'}`}>
+              {item.label}
             </span>
+            <p className="text-[9px] text-slate-400 mt-0.5">{item.desc}</p>
+          </div>
+          {item.badge && (
+            <motion.span 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="px-2 py-0.5 text-[9px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full shadow-sm"
+            >
+              {item.badge}
+            </motion.span>
           )}
         </div>
       )}
 
-      {/* Tooltip for collapsed state */}
+      {/* Premium Tooltip */}
       {collapsed && !mobileOpen && (
-        <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-slate-800 text-white text-[10px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap shadow-lg">
-          {item.label}
+        <div className="absolute left-full ml-3 px-3 py-2 bg-slate-800 text-white text-[11px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50 whitespace-nowrap shadow-xl backdrop-blur-lg bg-opacity-95">
+          <div className="flex flex-col">
+            <span>{item.label}</span>
+            <span className="text-[8px] text-slate-300 font-normal">{item.desc}</span>
+          </div>
+          <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-slate-800 rotate-45" />
         </div>
       )}
     </NavLink>
@@ -98,165 +115,58 @@ export default function DashboardLayout({ children }) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [greeting, setGreeting] = useState('');
 
   const navItems = NAV[user?.role] || [];
-  const roleColor = ROLE_BADGE_COLOR[user?.role] || 'from-blue-600 to-indigo-600';
+  const roleColor = ROLE_BADGE_COLOR[user?.role] || 'from-blue-600 to-cyan-600';
 
   const handleLogout = () => { logout(); navigate('/'); };
 
-  // Set greeting based on time
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting('Good morning');
-    else if (hour < 18) setGreeting('Good afternoon');
-    else setGreeting('Good evening');
-  }, []);
-
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false);
-    setShowUserMenu(false);
   }, [location.pathname]);
 
-  // Close user menu on click outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (showUserMenu && !e.target.closest('.user-menu-container')) {
-        setShowUserMenu(false);
-      }
-    };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [showUserMenu]);
-
   const sidebarVariants = {
-    expanded: { width: 280, transition: { type: 'spring', stiffness: 400, damping: 35 } },
-    collapsed: { width: 80, transition: { type: 'spring', stiffness: 400, damping: 35 } }
+    expanded: { width: 300, transition: { type: 'spring', stiffness: 400, damping: 35 } },
+    collapsed: { width: 88, transition: { type: 'spring', stiffness: 400, damping: 35 } }
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 font-sans text-slate-900 overflow-x-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100 font-sans text-slate-900 overflow-x-hidden">
 
       {/* ── Premium Animated Background ── */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 -right-40 w-[600px] h-[600px] bg-gradient-to-br from-blue-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-0 -left-40 w-[500px] h-[500px] bg-gradient-to-tr from-cyan-400/15 to-blue-400/15 rounded-full blur-3xl animate-pulse animation-delay-2000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-gradient-to-r from-transparent via-blue-100/10 to-transparent rotate-12 blur-2xl" />
+        <div className="absolute top-0 -right-40 w-[800px] h-[800px] bg-gradient-to-br from-blue-400/20 via-cyan-400/20 to-sky-400/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 -left-40 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-400/15 via-blue-400/15 to-indigo-400/15 rounded-full blur-3xl animate-pulse animation-delay-2000" />
+        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-gradient-to-r from-transparent via-blue-400/5 to-transparent rotate-45 blur-3xl" />
+        
+        {/* Animated particles */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
+            initial={{
+              x: Math.random() * window.innerWidth,
+              y: Math.random() * window.innerHeight,
+              opacity: 0.3
+            }}
+            animate={{
+              y: [null, -30, 30, -30],
+              x: [null, 20, -20, 20],
+              opacity: [0.3, 0.6, 0.3]
+            }}
+            transition={{
+              duration: 10 + Math.random() * 10,
+              repeat: Infinity,
+              repeatType: "reverse"
+            }}
+          />
+        ))}
       </div>
 
-      {/* ── Glassmorphism Top Header ── */}
-      <header className="fixed top-0 left-0 right-0 h-16 z-[250] flex items-center justify-between px-6 md:px-8 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm">
-        {/* Left: Logo & Brand */}
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl blur-md opacity-50" />
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
-              <span className="text-xl font-black tracking-tight">C</span>
-            </div>
-          </div>
-          <div className="hidden sm:block">
-            <div className="text-base font-black tracking-tight bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent leading-none">CAMPUS CLUB</div>
-            <div className="text-[8px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-0.5">MANAGEMENT PORTAL</div>
-          </div>
-        </div>
-
-        {/* Center: Quick Navigation Links (Desktop) */}
-        <nav className="hidden lg:flex items-center gap-0.5 bg-white/50 backdrop-blur-sm rounded-full p-0.5 border border-slate-200/50 shadow-sm">
-          <Link to="/" className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 hover:text-blue-600 transition-all rounded-full hover:bg-white/80">Home</Link>
-          <Link to="/events" className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 hover:text-blue-600 transition-all rounded-full hover:bg-white/80">Events</Link>
-          <Link to="/clubs" className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 hover:text-blue-600 transition-all rounded-full hover:bg-white/80">Clubs</Link>
-          <Link to="/discover" className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 hover:text-blue-600 transition-all rounded-full hover:bg-white/80">Discover</Link>
-        </nav>
-
-        {/* Right: Actions & Profile */}
-        <div className="flex items-center gap-3 md:gap-4">
-          {/* Search Bar */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-sm rounded-full border border-slate-200/50 shadow-sm">
-            <Search size={14} className="text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent text-xs text-slate-600 placeholder:text-slate-400 focus:outline-none min-w-[140px]"
-            />
-            <kbd className="hidden lg:block text-[9px] font-mono text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">⌘K</kbd>
-          </div>
-
-          {/* Notification Bell */}
-          <div className="relative">
-            <button className="relative p-2 rounded-full hover:bg-slate-100 transition-colors">
-              <BellRing size={18} className="text-slate-500" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />
-            </button>
-          </div>
-
-          {/* User Profile Dropdown */}
-          <div className="relative user-menu-container">
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-slate-200/50 shadow-sm hover:shadow-md transition-all duration-200 group"
-            >
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-md">
-                {(user?.name || 'A')[0].toUpperCase()}
-              </div>
-              <div className="hidden md:flex flex-col items-start leading-tight">
-                <span className="text-[9px] font-bold text-blue-500 uppercase tracking-wider">{user?.role === 'admin' ? 'ADMIN' : 'MANAGER'}</span>
-                <span className="text-[11px] font-semibold text-slate-700">{user?.name?.split(' ')[0] || 'Admin'}</span>
-              </div>
-              <ChevronDown size={12} className="text-slate-400 group-hover:text-slate-600 transition-colors hidden md:block" />
-            </button>
-
-            {/* Premium Dropdown Menu */}
-            <AnimatePresence>
-              {showUserMenu && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-2 w-64 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 overflow-hidden"
-                >
-                  <div className="px-4 py-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-                    <p className="text-sm font-bold text-slate-800">{user?.name}</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{user?.email}</p>
-                  </div>
-                  <div className="py-1">
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
-                      <UserCircle size={14} /> Profile Settings
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
-                      <Settings size={14} /> Account Preferences
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-slate-600 hover:bg-slate-50 transition-colors">
-                      <HelpCircle size={14} /> Help & Support
-                    </button>
-                  </div>
-                  <div className="border-t border-slate-100 mt-1 pt-1">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 transition-colors">
-                      <LogOut size={14} /> Sign Out
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Collapse Toggle (Desktop) */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg bg-white/50 backdrop-blur-sm border border-slate-200/50 text-slate-500 hover:bg-slate-100 transition-all"
-          >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </button>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Flex Container */}
-      <div className="flex pt-16">
+      <div className="flex pt-24">
         {/* Mobile Backdrop */}
         <AnimatePresence>
           {mobileOpen && (
@@ -265,7 +175,7 @@ export default function DashboardLayout({ children }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[200] md:hidden"
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] md:hidden"
             />
           )}
         </AnimatePresence>
@@ -273,165 +183,214 @@ export default function DashboardLayout({ children }) {
         {/* ── Premium Sidebar ── */}
         <motion.aside
           initial={false}
-          animate={mobileOpen ? { x: 0, width: 280 } : (collapsed ? 'collapsed' : 'expanded')}
+          animate={mobileOpen ? { x: 0, width: 300 } : (collapsed ? 'collapsed' : 'expanded')}
           variants={sidebarVariants}
-          className={`fixed inset-y-0 left-0 pt-16 z-[201] flex flex-col bg-white/80 backdrop-blur-xl border-r border-white/20 shadow-xl transition-transform duration-300 md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          className={`fixed top-24 bottom-0 left-0 z-[40] flex flex-col bg-white/70 backdrop-blur-xl border-r border-white/40 shadow-2xl transition-transform duration-300 md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
         >
           {/* User Card Area */}
           {(!collapsed || mobileOpen) && (
-            <div className="px-4 pt-5 pb-3 shrink-0">
-              <div className="rounded-xl bg-gradient-to-br from-slate-50/90 to-white/90 border border-slate-100/50 p-3 shadow-sm backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-4 pt-4 pb-2 shrink-0"
+            >
+              <div className="relative rounded-2xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-md border border-white/50 p-4 shadow-lg">
+                <div className="absolute top-2 right-2">
+                  <Zap size={12} className="text-yellow-500" />
+                </div>
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg blur-sm opacity-40" />
-                    <div className="relative h-10 w-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md">
-                      <Shield size={16} className="text-white" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl blur-md opacity-60" />
+                    <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                      <Shield size={20} className="text-white" />
                     </div>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-bold text-slate-800 leading-tight capitalize">{user?.name?.split(' ')[0] || 'Administrator'}</div>
-                    <div className={`text-[8px] font-bold bg-gradient-to-r ${roleColor} bg-clip-text text-transparent uppercase tracking-wider mt-0.5`}>
-                      {ROLE_LABEL[user?.role] || 'SYSTEM ADMIN'}
+                    <div className="flex items-center gap-1 mt-1">
+                      <div className={`text-[7px] font-bold bg-gradient-to-r ${roleColor} bg-clip-text text-transparent uppercase tracking-wider`}>
+                        {ROLE_LABEL[user?.role] || 'SYSTEM ADMIN'}
+                      </div>
+                      <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Quick Greeting */}
-          {(!collapsed || mobileOpen) && (
-            <div className="px-4 py-2">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <span className="text-base">👋</span>
-                <span>{greeting}, {user?.name?.split(' ')[0] || 'Admin'}</span>
-              </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Search Bar inside Sidebar */}
           {(!collapsed || mobileOpen) && (
-            <div className="px-4 py-2 shrink-0">
+            <div className="px-4 pt-1 pb-2 shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input
                   type="text"
                   placeholder="Search menu..."
-                  className="w-full bg-slate-50/80 backdrop-blur-sm border border-slate-100 rounded-lg py-2 pl-9 pr-3 text-xs text-slate-600 focus:outline-none focus:border-blue-300 focus:bg-white transition-all"
+                  className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl py-2.5 pl-9 pr-3 text-sm text-slate-600 focus:outline-none focus:border-blue-300 focus:bg-white/80 transition-all"
                 />
               </div>
             </div>
           )}
 
           {/* Navigation Wrapper */}
-          <div className="flex-1 overflow-y-auto px-3 py-5 space-y-5 custom-sidebar-scroll">
-            <div className={`px-2 text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em] ${collapsed && !mobileOpen ? 'text-center' : ''}`}>
-              {(!collapsed || mobileOpen) ? 'MAIN MENU' : '•••'}
+          <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4 custom-sidebar-scroll">
+            <div className={`px-2 text-[9px] font-bold text-transparent bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text uppercase tracking-[0.2em] ${collapsed && !mobileOpen ? 'text-center' : ''}`}>
+              {(!collapsed || mobileOpen) ? 'MAIN MENU' : '⚡'}
             </div>
 
-            <nav className="space-y-0.5">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.to || (item.to !== '/admin' && location.pathname.startsWith(item.to));
+            <nav className="space-y-1">
+              {navItems.map((item, idx) => {
+                const isDashboardRoot = item.to === '/admin' || item.to === '/community-admin';
+                const isActive = location.pathname === item.to || (!isDashboardRoot && location.pathname.startsWith(`${item.to}/`));
                 return (
-                  <SidebarNavItem
+                  <motion.div
                     key={item.to}
-                    item={item}
-                    isActive={isActive}
-                    collapsed={collapsed}
-                    mobileOpen={mobileOpen}
-                  />
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <SidebarNavItem
+                      item={item}
+                      isActive={isActive}
+                      collapsed={collapsed}
+                      mobileOpen={mobileOpen}
+                    />
+                  </motion.div>
                 );
               })}
             </nav>
 
             {/* Quick Actions Section */}
             {(!collapsed || mobileOpen) && (
-              <div className="pt-4 mt-4 border-t border-slate-100">
-                <div className="px-2 mb-2 text-[9px] font-bold text-slate-400 uppercase tracking-[0.15em]">QUICK ACTIONS</div>
-                <div className="space-y-0.5">
-                  <Link to="/events/create" className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors text-xs font-medium">
-                    <Sparkles size={14} className="text-amber-500" />
-                    Create Event
-                  </Link>
-                  <Link to="/communities/create" className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors text-xs font-medium">
-                    <Award size={14} className="text-emerald-500" />
-                    New Community
-                  </Link>
-                  <Link to="/analytics" className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors text-xs font-medium">
-                    <TrendingUp size={14} className="text-purple-500" />
-                    View Analytics
-                  </Link>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="pt-4 mt-4 border-t border-white/30"
+              >
+                <div className="px-2 mb-3 text-[9px] font-bold text-transparent bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text uppercase tracking-[0.2em]">
+                  QUICK ACTIONS
                 </div>
-              </div>
+                <div className="space-y-1">
+                  {[
+                    { icon: Sparkles, label: 'Create Event', color: 'from-blue-500 to-sky-500', to: '/events/create' },
+                    { icon: Award, label: 'New Community', color: 'from-cyan-500 to-blue-500', to: '/communities/create' },
+                    { icon: TrendingUp, label: 'View Analytics', color: 'from-indigo-500 to-blue-500', to: '/analytics' },
+                    { icon: Globe, label: 'Explore Trends', color: 'from-sky-500 to-cyan-500', to: '/trends' }
+                  ].map((action, idx) => (
+                    <Link
+                      key={idx}
+                      to={action.to}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 hover:bg-white/50 transition-all group"
+                    >
+                      <div className={`p-1.5 rounded-lg bg-gradient-to-r ${action.color} bg-opacity-10 group-hover:scale-110 transition-transform`}>
+                        <action.icon size={14} className="text-white" />
+                      </div>
+                      <span className="text-xs font-medium">{action.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
             )}
 
-            {/* Activity Status */}
+            {/* System Status */}
             {(!collapsed || mobileOpen) && (
-              <div className="pt-4 mt-4 border-t border-slate-100">
-                <div className="flex items-center gap-2 px-2 py-2">
-                  <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="text-[9px] font-medium text-slate-400">System Online</span>
+              <div className="pt-4 mt-4 border-t border-white/30">
+                <div className="flex items-center justify-between px-2 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      <div className="absolute inset-0 w-2 h-2 bg-emerald-500 rounded-full animate-ping opacity-75" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-emerald-700">System Online</span>
+                  </div>
+                  <Clock size={12} className="text-emerald-600" />
                 </div>
               </div>
             )}
           </div>
 
           {/* Footer Actions */}
-          <div className="px-3 py-4 border-t border-slate-100 shrink-0">
-            <button
+          <div className="px-3 py-4 border-t border-white/30 shrink-0">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handleLogout}
               className={`
-                group w-full flex items-center gap-3 rounded-lg py-2.5 transition-all duration-200 font-medium
-                ${collapsed && !mobileOpen ? 'justify-center px-0' : 'px-3'}
-                text-slate-500 hover:bg-rose-50 hover:text-rose-600
+                group w-full flex items-center gap-3 rounded-xl py-3 transition-all duration-200 font-medium
+                ${collapsed && !mobileOpen ? 'justify-center px-0' : 'px-4'}
+                text-slate-500 hover:bg-gradient-to-r hover:from-rose-50 hover:to-orange-50 hover:text-rose-600
               `}
             >
-              <LogOut size={16} className={`shrink-0 transition-transform ${collapsed && !mobileOpen ? '' : 'group-hover:translate-x-0.5'}`} />
+              <LogOut size={18} className={`shrink-0 transition-all duration-300 ${collapsed && !mobileOpen ? '' : 'group-hover:translate-x-1'}`} />
               {(!collapsed || mobileOpen) && (
-                <span className="text-[12px] tracking-tight">Sign Out</span>
+                <span className="text-[13px] font-semibold tracking-tight">Sign Out</span>
               )}
 
               {/* Tooltip for collapsed state */}
               {collapsed && !mobileOpen && (
-                <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-rose-600 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap shadow-xl">
+                <div className="absolute left-full ml-3 px-3 py-2 bg-gradient-to-r from-rose-600 to-orange-600 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap shadow-xl">
                   Sign Out
                 </div>
               )}
-            </button>
+            </motion.button>
           </div>
         </motion.aside>
 
         {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0">
-          <div className={`flex-1 transition-all duration-300 ease-in-out ${collapsed ? 'md:ml-[80px]' : 'md:ml-[280px]'}`}>
+          <div className={`flex-1 transition-all duration-300 ease-in-out ${collapsed ? 'md:ml-[88px]' : 'md:ml-[300px]'}`}>
             <div className="p-4 md:p-6 lg:p-8 relative z-10">
-              {children}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 12, scale: 0.995 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.995 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </main>
       </div>
 
       {/* Mobile Menu Trigger Button */}
-      <button
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed bottom-6 right-6 z-[190] flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200 transition-all active:scale-95 hover:shadow-xl"
+        className="md:hidden fixed bottom-6 right-6 z-[190] flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-600 text-white shadow-2xl shadow-blue-200 transition-all hover:shadow-xl"
       >
-        <Menu size={20} />
-      </button>
+        <Menu size={22} />
+      </motion.button>
 
       {/* Scrollbar Styling */}
       <style>{`
         .custom-sidebar-scroll::-webkit-scrollbar { width: 0px; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(241, 245, 249, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #3b82f6, #06b6d4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #2563eb, #0891b2); }
         .animation-delay-2000 { animation-delay: 2s; }
         @keyframes pulse-slow {
           0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.05); }
+          50% { opacity: 0.6; transform: scale(1.05); }
         }
         .animate-pulse-slow { animation: pulse-slow 6s ease-in-out infinite; }
+        
+        /* Custom gradient text animations */
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% auto;
+          animation: gradientShift 3s ease infinite;
+        }
       `}</style>
     </div>
   );

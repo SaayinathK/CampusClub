@@ -6,6 +6,51 @@ import api from '../../utils/api';
 
 const CATEGORIES = ['Technology', 'Arts', 'Sports', 'Academic', 'Cultural', 'Business', 'Science', 'Social', 'Other'];
 
+const CATEGORY_IMAGES = {
+   Technology: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1200&auto=format&fit=crop',
+   Arts: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=1200&auto=format&fit=crop',
+   Sports: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=1200&auto=format&fit=crop',
+   Academic: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1200&auto=format&fit=crop',
+   Cultural: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop',
+   Business: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1200&auto=format&fit=crop',
+   Science: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1200&auto=format&fit=crop',
+   Social: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1200&auto=format&fit=crop',
+   Other: 'https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=1200&auto=format&fit=crop',
+};
+
+const STATUS_THEME = {
+   published: {
+      bar: 'bg-blue-500',
+      badge: 'bg-blue-50 text-blue-700 border-blue-200',
+      progress: 'bg-blue-500',
+   },
+   pending_approval: {
+      bar: 'bg-sky-500',
+      badge: 'bg-sky-50 text-sky-700 border-sky-200',
+      progress: 'bg-sky-500',
+   },
+   rejected: {
+      bar: 'bg-rose-500',
+      badge: 'bg-rose-50 text-rose-700 border-rose-200',
+      progress: 'bg-rose-500',
+   },
+   completed: {
+      bar: 'bg-cyan-600',
+      badge: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+      progress: 'bg-cyan-600',
+   },
+   cancelled: {
+      bar: 'bg-slate-400',
+      badge: 'bg-slate-100 text-slate-600 border-slate-200',
+      progress: 'bg-slate-400',
+   },
+   draft: {
+      bar: 'bg-indigo-500',
+      badge: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      progress: 'bg-indigo-500',
+   },
+};
+
 const normalizeCategory = (cat) => {
    if (!cat) return 'Technology';
    if (CATEGORIES.includes(cat)) return cat;
@@ -84,9 +129,9 @@ export default function CommunityAdminEvents() {
    const handleExport = (eventId, eventTitle) => {
       const token = localStorage.getItem('token');
       const link = document.createElement('a');
-      link.href = `http://localhost:5000/api/events/${eventId}/export`;
+      link.href = `http://localhost:5001/api/events/${eventId}/export`;
       // Attach token via a temp fetch approach
-      fetch(`http://localhost:5000/api/events/${eventId}/export`, {
+      fetch(`http://localhost:5001/api/events/${eventId}/export`, {
          headers: { Authorization: `Bearer ${token}` },
       })
          .then(res => res.blob())
@@ -207,13 +252,21 @@ export default function CommunityAdminEvents() {
    return (
       <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-transparent">
          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-cyan-600/10 rounded-full mix-blend-screen filter blur-[150px] animate-blob pointer-events-none" />
-         <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full mix-blend-screen filter blur-[150px] animation-delay-4000 animate-blob pointer-events-none" />
+         <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full mix-blend-screen filter blur-[150px] animation-delay-4000 animate-blob pointer-events-none" />
 
          <div className="max-w-6xl mx-auto relative z-10 space-y-8">
 
             {/* Header */}
-            <header className="surface-panel rounded-[2.5rem] p-8 md:p-10 border border-slate-200 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 shadow-2xl relative overflow-hidden group">
-               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <header className="surface-panel rounded-[2.5rem] p-8 md:p-10 border border-blue-100 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 shadow-2xl relative overflow-hidden group">
+               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-400/5 to-blue-600/10 opacity-90 pointer-events-none" />
+               <div className="absolute right-0 top-0 w-64 h-full hidden xl:block pointer-events-none opacity-60">
+                  <img
+                     src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1200&auto=format&fit=crop"
+                     alt="Campus event"
+                     className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-l from-white/20 via-white/55 to-transparent" />
+               </div>
 
                <div className="flex items-center gap-5 md:gap-6 relative z-10 min-w-0">
                   <div className="w-16 h-16 rounded-[1.35rem] bg-gradient-to-br from-cyan-400 to-blue-500 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.25)] shrink-0">
@@ -230,10 +283,10 @@ export default function CommunityAdminEvents() {
                </div>
 
                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 relative z-10 w-full xl:w-auto xl:justify-end">
-                  <Link to="/community-admin" className="theme-button-secondary px-6 py-3 rounded-full font-bold text-slate-700 transition-all hover:-translate-y-1 border-slate-200 flex items-center gap-2 text-sm uppercase tracking-wider shadow-sm">
+                  <Link to="/community-admin" className="px-6 py-3 rounded-full font-bold text-blue-700 transition-all hover:-translate-y-1 border border-blue-200 bg-blue-50/70 hover:bg-blue-100 flex items-center justify-center gap-2 text-sm uppercase tracking-wider shadow-sm">
                      ← Dashboard
                   </Link>
-                  <button onClick={openCreate} className="theme-button-primary px-6 py-3 rounded-full font-bold text-white transition-all hover:-translate-y-1 flex items-center gap-2 text-sm uppercase tracking-wider shadow-[0_8px_25px_rgba(14,165,233,0.22)]">
+                  <button onClick={openCreate} className="px-6 py-3 rounded-full font-bold text-white transition-all hover:-translate-y-1 flex items-center justify-center gap-2 text-sm uppercase tracking-wider bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-[0_10px_28px_rgba(37,99,235,0.28)]">
                      <span>+</span> New Event
                   </button>
                </div>
@@ -243,10 +296,10 @@ export default function CommunityAdminEvents() {
             <div className="surface-panel rounded-[2rem] p-2 md:p-3 border border-slate-200 flex flex-wrap gap-2 shadow-sm">
                {[
                   { value: '', label: 'All Events', icon: '📊', bg: 'bg-slate-100 text-slate-700' },
-                  { value: 'pending_approval', label: 'Pending', icon: '⏳', bg: 'bg-amber-50 text-amber-700' },
-                  { value: 'published', label: 'Published', icon: '🚀', bg: 'bg-emerald-50 text-emerald-700' },
+                  { value: 'pending_approval', label: 'Pending', icon: '⏳', bg: 'bg-sky-50 text-sky-700' },
+                  { value: 'published', label: 'Published', icon: '🚀', bg: 'bg-blue-50 text-blue-700' },
                   { value: 'rejected', label: 'Rejected', icon: '❌', bg: 'bg-rose-50 text-rose-700' },
-                  { value: 'completed', label: 'Completed', icon: '✅', bg: 'bg-purple-50 text-purple-700' },
+                  { value: 'completed', label: 'Completed', icon: '✅', bg: 'bg-cyan-50 text-cyan-700' },
                   { value: 'cancelled', label: 'Cancelled', icon: '🚫', bg: 'bg-slate-100 text-slate-500' }
                ].map((f) => (
                   <button
@@ -271,11 +324,15 @@ export default function CommunityAdminEvents() {
                </div>
             ) : filteredEvents.length === 0 ? (
                <div className="flex flex-col items-center justify-center text-center p-16 surface-panel rounded-3xl border border-slate-200 shadow-2xl">
-                  <span className="text-6xl mb-6 drop-shadow-2xl opacity-50">📅</span>
+                  <img
+                     src="https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?q=80&w=900&auto=format&fit=crop"
+                     alt="No events yet"
+                     className="w-44 h-28 object-cover rounded-2xl border border-blue-100 shadow-md mb-6"
+                  />
                   <h3 className="text-3xl font-black mb-3 text-slate-900">No events found</h3>
                   <p className="text-slate-500 font-medium max-w-md mb-8">{statusFilter ? `No ${statusFilter} events to display.` : 'Create your first community event to get started.'}</p>
                   {!statusFilter && (
-                     <button onClick={openCreate} className="theme-button-primary px-8 py-4 rounded-xl font-bold text-white transition-all hover:scale-105 flex items-center gap-2 shadow-[0_8px_25px_rgba(14,165,233,0.22)]">
+                     <button onClick={openCreate} className="px-8 py-4 rounded-xl font-bold text-white transition-all hover:scale-105 flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-[0_10px_28px_rgba(37,99,235,0.28)]">
                         <span>+</span> Create First Event
                      </button>
                   )}
@@ -288,12 +345,16 @@ export default function CommunityAdminEvents() {
                      const isRejected = ev.status === 'rejected';
                      const isCompleted = ev.status === 'completed';
                      const isCancelled = ev.status === 'cancelled';
-
-                     const statusColor = isPublished ? 'emerald-500' : isPending ? 'amber-500' : isRejected ? 'rose-500' : isCompleted ? 'purple-500' : 'slate-500';
+                     const statusTheme = STATUS_THEME[ev.status] || STATUS_THEME.draft;
+                     const categoryImage = CATEGORY_IMAGES[normalizeCategory(ev.category)] || CATEGORY_IMAGES.Other;
 
                      return (
-                        <div key={ev._id} className="surface-card border border-slate-200 rounded-3xl overflow-hidden shadow-2xl hover:shadow-[0_20px_50px_rgba(148,163,184,0.18)] transition-all duration-300 hover:-translate-y-1 group relative flex flex-col pt-1">
-                           <div className={`absolute top-0 left-0 w-full h-1 bg-${statusColor} opacity-80`} />
+                        <div key={ev._id} className="surface-card border border-blue-100 rounded-3xl overflow-hidden shadow-2xl hover:shadow-[0_20px_50px_rgba(59,130,246,0.20)] transition-all duration-300 hover:-translate-y-1 group relative flex flex-col pt-1 bg-white/95">
+                           <div className={`absolute top-0 left-0 w-full h-1 ${statusTheme.bar} opacity-90`} />
+                           <div className="h-28 relative overflow-hidden">
+                              <img src={categoryImage} alt={ev.category || 'Event'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-slate-900/5 to-transparent" />
+                           </div>
                            <div className="p-6 flex flex-col h-full">
 
                               <div className="flex items-start gap-4 mb-4">
@@ -303,7 +364,7 @@ export default function CommunityAdminEvents() {
                                  <div className="flex-1 min-w-0 pt-1">
                                     <h4 className="font-bold text-lg text-slate-900 group-hover:text-cyan-600 transition-colors leading-tight line-clamp-1 mb-1.5">{ev.title}</h4>
                                     <div className="flex flex-wrap gap-2">
-                                       <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded bg-white text-${statusColor} border border-slate-200 shadow-sm`}>
+                                       <span className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded border shadow-sm ${statusTheme.badge}`}>
                                           {ev.status.replace('_', ' ')}
                                        </span>
                                        <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded bg-slate-50 text-slate-600 border border-slate-200">
@@ -339,7 +400,7 @@ export default function CommunityAdminEvents() {
                                        <span>{ev.participants?.length || 0} / {ev.maxParticipants || '∞'} registered</span>
                                        {ev.maxParticipants && (
                                           <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                             <div className={`h-full bg-${statusColor}`} style={{ width: `${Math.min(100, (ev.participants?.length / ev.maxParticipants) * 100)}%` }} />
+                                             <div className={`h-full ${statusTheme.progress}`} style={{ width: `${Math.min(100, (ev.participants?.length / ev.maxParticipants) * 100)}%` }} />
                                           </div>
                                        )}
                                     </div>
@@ -348,21 +409,21 @@ export default function CommunityAdminEvents() {
 
                               <div className="space-y-2 mt-auto">
                                  <div className="flex gap-2">
-                                    <button onClick={() => viewParticipants(ev)} className="flex-1 py-2 rounded-xl bg-white border border-slate-200 font-bold text-xs uppercase tracking-widest text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+                                    <button onClick={() => viewParticipants(ev)} className="flex-1 py-2 rounded-xl bg-blue-50 border border-blue-200 font-bold text-xs uppercase tracking-widest text-blue-700 hover:bg-blue-100 transition-colors shadow-sm">
                                        👥 Guest List
                                     </button>
                                     {['published', 'completed'].includes(ev.status) && (
                                        <>
-                                          <button onClick={() => openAttendance(ev)} className="flex-1 py-2 rounded-xl bg-emerald-50 border border-emerald-200 font-bold text-xs uppercase tracking-widest text-emerald-700 hover:bg-emerald-100 transition-colors shadow-sm">
+                                          <button onClick={() => openAttendance(ev)} className="flex-1 py-2 rounded-xl bg-cyan-50 border border-cyan-200 font-bold text-xs uppercase tracking-widest text-cyan-700 hover:bg-cyan-100 transition-colors shadow-sm">
                                              ✅ Attendance
                                           </button>
-                                          <button onClick={() => handleExport(ev._id, ev.title)} className="py-2 px-3 rounded-xl bg-cyan-50 border border-cyan-200 font-bold text-xs uppercase tracking-widest text-cyan-700 hover:bg-cyan-100 transition-colors shadow-sm" title="Export to CSV">
+                                          <button onClick={() => handleExport(ev._id, ev.title)} className="py-2 px-3 rounded-xl bg-blue-50 border border-blue-200 font-bold text-xs uppercase tracking-widest text-blue-700 hover:bg-blue-100 transition-colors shadow-sm" title="Export to CSV">
                                              ⬇
                                           </button>
                                        </>
                                     )}
                                     {['pending_approval', 'rejected', 'draft', 'cancelled'].includes(ev.status) && (
-                                       <button onClick={() => openEdit(ev)} className="flex-[0.5] py-2 rounded-xl bg-cyan-50 border border-cyan-200 font-bold text-xs uppercase tracking-widest text-cyan-700 hover:bg-cyan-100 transition-colors shadow-sm">
+                                       <button onClick={() => openEdit(ev)} className="flex-[0.5] py-2 rounded-xl bg-blue-50 border border-blue-200 font-bold text-xs uppercase tracking-widest text-blue-700 hover:bg-blue-100 transition-colors shadow-sm">
                                           ✏️ Edit
                                        </button>
                                     )}
@@ -376,7 +437,7 @@ export default function CommunityAdminEvents() {
                                     )}
                                     {isPublished && (
                                        <>
-                                          <button onClick={() => updateStatus(ev._id, 'completed')} className="flex-1 py-2 rounded-xl bg-purple-50 border border-purple-200 font-bold text-xs uppercase tracking-widest text-purple-700 hover:bg-purple-100 transition-colors shadow-sm">
+                                          <button onClick={() => updateStatus(ev._id, 'completed')} className="flex-1 py-2 rounded-xl bg-cyan-50 border border-cyan-200 font-bold text-xs uppercase tracking-widest text-cyan-700 hover:bg-cyan-100 transition-colors shadow-sm">
                                              ✅ Complete
                                           </button>
                                           <button onClick={() => updateStatus(ev._id, 'cancelled')} className="flex-1 py-2 rounded-xl bg-rose-50 border border-rose-200 font-bold text-xs uppercase tracking-widest text-rose-700 hover:bg-rose-100 transition-colors shadow-sm">
@@ -408,8 +469,8 @@ export default function CommunityAdminEvents() {
 
          {/* Editor Modal */}
          {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/35 backdrop-blur-sm" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-               <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="fixed inset-0 z-[80] flex items-start justify-center px-4 pt-28 pb-6 bg-black/35 backdrop-blur-sm overflow-y-auto" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
+               <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl max-h-[calc(100vh-8rem)] overflow-y-auto shadow-2xl">
                   <div className="p-8 border-b border-slate-200 sticky top-0 bg-white/95 backdrop-blur-xl z-10 flex justify-between items-center">
                      <div>
                         <h3 className="text-2xl font-black text-slate-900 flex items-center gap-2">

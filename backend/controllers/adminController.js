@@ -2,6 +2,7 @@ const Receipt = require('../models/Receipt');
 const Feedback = require('../models/Feedback');
 const User = require('../models/User');
 const Event = require('../models/Event');
+const { createNotification } = require('../utils/notifications');
 
 // @desc Get analytics for popular events
 // @route GET /api/admin/analytics
@@ -92,6 +93,19 @@ exports.updateReceiptStatus = async (req, res) => {
                     await event.save();
                 }
             }
+        }
+
+        const notificationType = status === 'Verified' ? 'receipt_verified' : status === 'Rejected' ? 'receipt_rejected' : null;
+        if (notificationType) {
+            await createNotification({
+                recipient: receipt.userId._id,
+                type: notificationType,
+                event: receipt.eventId || undefined,
+                title: status === 'Verified' ? 'Receipt Verified' : 'Receipt Rejected',
+                message: status === 'Verified'
+                    ? 'Your payment receipt has been verified. Your registration is confirmed.'
+                    : 'Your payment receipt was rejected. Please upload a new copy.',
+            });
         }
 
         res.status(200).json({

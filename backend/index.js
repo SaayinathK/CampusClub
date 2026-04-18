@@ -75,12 +75,8 @@ app.get('/', (req, res) => {
 });
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/uniconnect', { family: 4 })
-    .then(() => console.log('MongoDB successfully connected'))
-    .catch((err) => console.error('MongoDB connection error: ', err));
-
-// Do NOT pass deprecated/unsupported options to the driver
-mongoose.connect(MONGO_URI, { family: 4 })
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/uniconnect';
+mongoose.connect(mongoUri, { family: 4 })
   .then(() => {
     console.log('MongoDB successfully connected');
     // bind to 0.0.0.0 so localhost resolves reliably to your Node server

@@ -6,7 +6,7 @@ import {
   Globe, Shield, LayoutDashboard, Edit3, Eye, 
   MapPin, Link2, Facebook, Instagram, Twitter, 
   Zap, Clock, ShieldCheck, XCircle, Camera, CheckSquare,
-   ArrowLeft, Share2, Info, Image as ImageIcon, Users, Calendar
+   Share2, Info, Image as ImageIcon, Users, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -69,19 +69,44 @@ export default function CommunityAdminProfile() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 py-10 animate-in fade-in duration-700">
-      
-      {/* Header Command */}
-      <div className="flex items-center justify-between px-2">
-         <Link to="/community-admin" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">
-            <ArrowLeft size={14} strokeWidth={3} /> Terminal Dashboard
-         </Link>
-         <div className="flex items-center gap-2 text-[9px] font-black uppercase text-slate-400 tracking-widest">
-            <Globe size={14} /> Institutional identity Control
-         </div>
-      </div>
+    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-transparent animate-in fade-in duration-700">
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-cyan-600/10 rounded-full mix-blend-screen filter blur-[150px] animate-blob pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full mix-blend-screen filter blur-[150px] animation-delay-4000 animate-blob pointer-events-none" />
 
-      <div className="card-modern overflow-hidden bg-white">
+      <div className="max-w-6xl mx-auto relative z-10 space-y-8">
+         <header className="surface-panel rounded-[2.5rem] p-8 md:p-10 border border-blue-100 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-400/5 to-blue-600/10 opacity-90 pointer-events-none" />
+            <div className="absolute right-0 top-0 w-64 h-full hidden xl:block pointer-events-none opacity-55">
+               <img
+                  src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1200&auto=format&fit=crop"
+                  alt="Community profile"
+                  className="w-full h-full object-cover"
+               />
+               <div className="absolute inset-0 bg-gradient-to-l from-white/25 via-white/60 to-transparent" />
+            </div>
+
+            <div className="flex items-center gap-5 md:gap-6 relative z-10 min-w-0">
+               <div className="w-16 h-16 rounded-[1.35rem] bg-gradient-to-br from-cyan-400 to-blue-500 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.25)] shrink-0">
+                  <div className="w-full h-full bg-white rounded-[1.25rem] flex items-center justify-center text-3xl shadow-sm">🏢</div>
+               </div>
+               <div className="min-w-0">
+                  <h2 className="text-3xl md:text-5xl font-black mb-2 tracking-tight leading-none">
+                     COMMUNITY <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">PROFILE</span>
+                  </h2>
+                  <p className="text-slate-500 font-medium text-sm md:text-base">
+                     {community?.name} — Configure identity, visuals, and links
+                  </p>
+               </div>
+            </div>
+
+            <div className="relative z-10 w-full xl:w-auto xl:justify-end flex">
+               <Link to="/community-admin" className="px-6 py-3 rounded-full font-bold text-blue-700 transition-all hover:-translate-y-1 border border-blue-200 bg-blue-50/70 hover:bg-blue-100 flex items-center gap-2 text-sm uppercase tracking-wider shadow-sm">
+                  ← Dashboard
+               </Link>
+            </div>
+         </header>
+
+         <div className="surface-panel overflow-hidden bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl">
           {/* Institutional Hero */}
           <div className="relative h-48 bg-slate-100 overflow-hidden group">
              {form.coverImage ? (
@@ -315,6 +340,8 @@ export default function CommunityAdminProfile() {
              </div>
           </div>
       </div>
+
+         </div>
     </div>
   );
 }

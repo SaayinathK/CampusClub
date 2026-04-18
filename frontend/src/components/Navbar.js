@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { BellRing, ChevronDown, ChevronLeft, Crown, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import NotificationBell from './NotificationBell';
+import api from '../utils/api';
 
 const ROLE_ROUTES = {
     admin: '/admin',
@@ -9,95 +10,291 @@ const ROLE_ROUTES = {
     student: '/student',
 };
 
-const ROLE_LABELS = {
-    admin: 'Admin',
-    community_admin: 'Club Admin',
-    student: 'Student',
-    external: 'External',
+const NOTIFICATION_ROUTES = {
+    admin: '/admin/notifications',
+    community_admin: '/community-admin/notifications',
+    student: '/student/notifications',
+};
+
+const ROLE_BADGES = {
+    admin: 'SYSTEM ADMIN',
+    community_admin: 'COMMUNITY ADMIN',
+    student: 'STUDENT',
+    external: 'EXTERNAL',
     sliit: 'SLIIT',
 };
 
+const NAV_ITEMS_BY_ROLE = {
+    admin: [
+        { label: 'HOME', to: '/' },
+        { label: 'USERS', to: '/admin/users' },
+        { label: 'EVENTS', to: '/admin/events' },
+    ],
+    community_admin: [
+        { label: 'HOME', to: '/' },
+        { label: 'MEMBERS', to: '/community-admin/members' },
+        { label: 'EVENTS', to: '/community-admin/events' },
+    ],
+    student: [
+        { label: 'HOME', to: '/' },
+        { label: 'DASHBOARD', to: '/student' },
+        { label: 'EVENTS', to: '/events' },
+        { label: 'CLUBS', to: '/clubs' },
+    ],
+    default: [
+        { label: 'HOME', to: '/' },
+        { label: 'EVENTS', to: '/events' },
+        { label: 'CLUBS', to: '/clubs' },
+    ],
+};
+
+const SEARCH_ITEMS_BY_ROLE = {
+    admin: [
+        { label: 'Dashboard', to: '/admin', keywords: ['home', 'admin', 'dashboard', 'overview'] },
+        { label: 'Users', to: '/admin/users', keywords: ['user', 'accounts', 'members'] },
+        { label: 'Communities', to: '/admin/communities', keywords: ['clubs', 'communities', 'groups'] },
+        { label: 'Events', to: '/admin/events', keywords: ['event', 'calendar'] },
+        { label: 'Notifications', to: '/admin/notifications', keywords: ['notification', 'alerts', 'bell'] },
+    ],
+    community_admin: [
+        { label: 'Dashboard', to: '/community-admin', keywords: ['home', 'dashboard', 'community'] },
+        { label: 'Members', to: '/community-admin/members', keywords: ['member', 'users'] },
+        { label: 'Events', to: '/community-admin/events', keywords: ['event', 'calendar'] },
+        { label: 'Notifications', to: '/community-admin/notifications', keywords: ['notification', 'alerts', 'bell'] },
+    ],
+    student: [
+        { label: 'Dashboard', to: '/student', keywords: ['home', 'dashboard'] },
+        { label: 'Events', to: '/events', keywords: ['event', 'calendar'] },
+        { label: 'Clubs', to: '/clubs', keywords: ['club', 'community'] },
+        { label: 'Profile', to: '/student/profile', keywords: ['profile', 'account'] },
+        { label: 'Registrations', to: '/student/registrations', keywords: ['registration', 'tickets'] },
+        { label: 'Notifications', to: '/student/notifications', keywords: ['notification', 'alerts', 'bell'] },
+    ],
+    default: [
+        { label: 'Home', to: '/', keywords: ['home'] },
+        { label: 'Events', to: '/events', keywords: ['event', 'calendar'] },
+        { label: 'Clubs', to: '/clubs', keywords: ['club', 'community'] },
+    ],
+};
+
+const getInitial = (value) => {
+    const text = value || '?';
+    return text.charAt(0).toUpperCase();
+};
+
 const Navbar = () => {
-    const [isScrolled, setIsScrolled] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 20);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
     const confirmLogout = () => {
         logout();
+        setShowUserMenu(false);
         setShowLogoutModal(false);
         navigate('/');
     };
 
     const dashboardRoute = ROLE_ROUTES[user?.role];
+    const profileName = user?.name || user?.username || 'admin';
+    const profileRole = ROLE_BADGES[user?.role] || (user?.role || 'USER').toUpperCase();
+    const navItems = NAV_ITEMS_BY_ROLE[user?.role] || NAV_ITEMS_BY_ROLE.default;
+    const notificationTarget = user ? (NOTIFICATION_ROUTES[user.role] || '/student/notifications') : '/signin';
+    const searchItems = SEARCH_ITEMS_BY_ROLE[user?.role] || SEARCH_ITEMS_BY_ROLE.default;
+
+    const filteredSearchItems = searchQuery.trim()
+        ? searchItems
+            .filter((item) => {
+                const q = searchQuery.trim().toLowerCase();
+                if (item.label.toLowerCase().includes(q)) return true;
+                return item.keywords.some((k) => k.includes(q));
+            })
+            .slice(0, 6)
+        : [];
+
+    const runSearch = useCallback((query) => {
+        const q = (query || '').trim().toLowerCase();
+        if (!q) return;
+
+        const bestMatch = searchItems.find((item) => {
+            if (item.label.toLowerCase().includes(q)) return true;
+            return item.keywords.some((k) => k.includes(q));
+        });
+
+        if (bestMatch) {
+            navigate(bestMatch.to);
+            setSearchQuery('');
+            setShowSearchSuggestions(false);
+        }
+    }, [navigate, searchItems]);
+
+    const onSearchSubmit = (e) => {
+        e.preventDefault();
+        runSearch(searchQuery);
+    };
+
+    const fetchUnreadCount = useCallback(async () => {
+        if (!user) {
+            setUnreadCount(0);
+            return;
+        }
+        try {
+            const res = await api.get('/notifications');
+            setUnreadCount(res.data?.unreadCount || 0);
+        } catch {
+            setUnreadCount(0);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchUnreadCount();
+        if (!user) return;
+        const interval = setInterval(fetchUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, [fetchUnreadCount, user]);
 
     return (
         <>
-            <nav className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${isScrolled ? 'py-3' : 'py-5'}`}>
-                <div className="container mx-auto px-4 sm:px-6">
-                    <div className={`flex items-center justify-between gap-4 rounded-[1.75rem] px-4 sm:px-6 py-3 transition-all duration-500 ${isScrolled ? 'surface-panel border border-slate-200 shadow-2xl shadow-sky-950/10' : 'bg-white/70 backdrop-blur-2xl border border-slate-200'}`}>
-                        <div className="flex items-center gap-3 shrink-0">
-                            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-sky-500 via-cyan-500 to-blue-600 flex items-center justify-center shadow-[0_12px_30px_rgba(14,165,233,0.24)]">
-                                <span className="text-white font-black text-lg tracking-tighter">S</span>
+            <nav className="fixed inset-x-0 top-0 z-50 h-24 bg-[#f4f6f8]/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_4px_14px_rgba(15,23,42,0.08)]">
+                <div className="mx-auto h-full max-w-[1920px] px-4">
+                    <div className="flex h-full items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 shrink-0 min-w-[240px]">
+                            <div className="relative">
+                                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-600/45 to-cyan-500/45 blur-md" />
+                                <div className="relative flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white shadow-lg">
+                                    <Crown size={16} className="text-yellow-300" />
+                                </div>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[11px] font-black uppercase tracking-[0.35em] text-slate-900 leading-none">
-                                    Student Portal
-                                </span>
+                            <div className="leading-none">
+                                <p className="text-[22px] font-black text-slate-800 tracking-tight">CAMPUS CLUB</p>
+                                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-cyan-600 mt-1">Management Portal</p>
                             </div>
                         </div>
 
-                        <div className="hidden lg:flex items-center gap-8 uppercase font-black text-[10px] tracking-[0.25em] text-slate-600">
-                            <Link to="/" className="transition-all duration-300 hover:text-slate-900">Home</Link>
-                            <Link to="/events" className="transition-all duration-300 hover:text-slate-900 border-b border-transparent hover:border-cyan-400/50 pb-1">Events</Link>
-                            <Link to="/clubs" className="transition-all duration-300 hover:text-slate-900 border-b border-transparent hover:border-cyan-400/50 pb-1">Clubs</Link>
+                        <nav className="hidden xl:flex items-center gap-1 rounded-full border border-slate-200 bg-white/70 px-1.5 py-1 shadow-inner">
+                            {navItems.map((item) => (
+                                <Link
+                                    key={item.label}
+                                    to={item.to}
+                                    className="rounded-full px-4 py-1.5 text-[14px] font-semibold uppercase tracking-[0.04em] text-slate-600 hover:bg-white hover:text-slate-900 transition-all"
+                                >
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </nav>
 
-                            <div className="h-4 w-px bg-slate-200 mx-2"></div>
+                        <div className="flex items-center justify-end gap-2.5 shrink-0 min-w-[430px]">
+                            <div className="hidden lg:block relative w-[320px]">
+                                <form onSubmit={onSearchSubmit} className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/75 px-3 py-2 shadow-sm">
+                                    <Search size={16} className="text-slate-400" />
+                                    <input
+                                        type="text"
+                                        value={searchQuery}
+                                        onChange={(e) => {
+                                            setSearchQuery(e.target.value);
+                                            setShowSearchSuggestions(true);
+                                        }}
+                                        onFocus={() => setShowSearchSuggestions(true)}
+                                        onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 120)}
+                                        placeholder="Search pages..."
+                                        className="w-full bg-transparent text-[14px] text-slate-600 placeholder:text-slate-400 focus:outline-none"
+                                    />
+                                    <span className="hidden xl:inline text-[13px] text-slate-400 font-mono">Enter</span>
+                                </form>
 
-                            {!user ? (
-                                <div className="flex items-center gap-4">
-                                    <Link to="/signin" className="theme-button-secondary px-6 py-3 text-[10px] font-black uppercase tracking-[0.25em]">
-                                        Sign In
+                                {showSearchSuggestions && filteredSearchItems.length > 0 && (
+                                    <div className="absolute top-[calc(100%+8px)] left-0 right-0 rounded-2xl border border-slate-200 bg-white shadow-xl overflow-hidden z-[70]">
+                                        {filteredSearchItems.map((item) => (
+                                            <button
+                                                key={item.to}
+                                                type="button"
+                                                onClick={() => runSearch(item.label)}
+                                                className="w-full px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                            >
+                                                {item.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {user ? (
+                                <>
+                                    <Link
+                                        to={notificationTarget}
+                                        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-600 hover:text-slate-900 hover:bg-white transition-all"
+                                        title="Notifications"
+                                    >
+                                        <BellRing size={16} />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-blue-500 text-white text-[8px] font-bold flex items-center justify-center shadow-md">
+                                                {unreadCount > 99 ? '99+' : unreadCount}
+                                            </span>
+                                        )}
                                     </Link>
-                                    <Link to="/signup" className="theme-button-primary px-6 py-3 text-[10px] font-black uppercase tracking-[0.25em]">
-                                        Register
-                                    </Link>
-                                </div>
-                            ) : (
-                                <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-4 duration-700">
-                                    <NotificationBell />
-                                    <Link to={dashboardRoute || '/profile'} className="flex items-center gap-3 group relative px-4 py-2 rounded-2xl bg-white border border-slate-200 hover:border-cyan-300/30 transition-all shadow-sm">
-                                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-500/20 group-hover:scale-110 transition-transform">
-                                            <span className="text-[12px] text-white font-black">{(user.name || user.username || '?')[0].toUpperCase()}</span>
-                                        </div>
-                                        <div className="flex flex-col items-start leading-none">
-                                            <span className="text-cyan-600 text-[8px] font-black tracking-widest uppercase mb-1">{ROLE_LABELS[user.role] || user.role}</span>
-                                            <span className="text-slate-900 font-black tracking-widest uppercase text-[10px]">{user.name || user.username}</span>
-                                        </div>
-                                    </Link>
+
+                                    <div className="relative">
+                                        <button
+                                            onClick={() => setShowUserMenu((v) => !v)}
+                                            className="flex items-center gap-2.5 rounded-full border border-slate-200 bg-white/85 py-1.5 pl-1.5 pr-2.5 shadow-sm hover:bg-white transition-all"
+                                        >
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 text-white font-black text-[13px] shadow-md">
+                                                {getInitial(profileName)}
+                                            </div>
+                                            <div className="text-left leading-tight">
+                                                <p className="text-[8px] font-black uppercase tracking-[0.08em] text-blue-600">{profileRole}</p>
+                                                <p className="text-[11px] font-semibold text-slate-700">{profileName}</p>
+                                            </div>
+                                            <ChevronDown size={13} className="text-slate-400" />
+                                        </button>
+
+                                        {showUserMenu && (
+                                            <div className="absolute right-0 mt-2 w-36 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+                                                <Link
+                                                    to={dashboardRoute || '/profile'}
+                                                    onClick={() => setShowUserMenu(false)}
+                                                    className="block px-3 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                                                >
+                                                    Open Dashboard
+                                                </Link>
+                                                <button
+                                                    onClick={() => {
+                                                        setShowUserMenu(false);
+                                                        setShowLogoutModal(true);
+                                                    }}
+                                                    className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50"
+                                                >
+                                                    Sign Out
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <button
-                                        onClick={() => setShowLogoutModal(true)}
-                                        className="group p-2.5 rounded-xl bg-white hover:bg-red-50 text-slate-500 hover:text-rose-500 transition-all border border-slate-200 hover:border-red-200"
-                                        title="Sign Out"
+                                        onClick={() => navigate(dashboardRoute || '/')}
+                                        className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-100/80 text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 transition-all"
+                                        title="Go to Dashboard"
                                     >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                        </svg>
+                                        <ChevronLeft size={15} />
                                     </button>
+                                </>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Link to="/signin" className="px-3.5 py-2 rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-all">
+                                        Sign In
+                                    </Link>
+                                    <Link to="/signup" className="px-3.5 py-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-sm font-semibold shadow-md hover:opacity-95 transition-all">
+                                        Register
+                                    </Link>
                                 </div>
                             )}
                         </div>
 
-                        {/* Mobile Menu Toggle */}
-                        <button className="lg:hidden text-slate-700 p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button className="xl:hidden text-slate-700 p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
                             </svg>
                         </button>
@@ -105,7 +302,6 @@ const Navbar = () => {
                 </div>
             </nav>
 
-            {/* Logout Confirmation Modal */}
             {showLogoutModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowLogoutModal(false)} />
@@ -119,7 +315,7 @@ const Navbar = () => {
                             <div>
                                 <h3 className="text-slate-900 font-black uppercase tracking-widest text-sm mb-2">Sign Out?</h3>
                                 <p className="text-slate-500 text-xs font-medium leading-relaxed">
-                                    You're signed in as <span className="text-slate-900 font-bold">{user?.name || user?.username}</span>.<br />
+                                    You're signed in as <span className="text-slate-900 font-bold">{profileName}</span>.<br />
                                     Are you sure you want to sign out?
                                 </p>
                             </div>

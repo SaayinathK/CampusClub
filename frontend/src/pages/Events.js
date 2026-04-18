@@ -120,7 +120,7 @@ export default function Events() {
             const params = new URLSearchParams({ limit: 100 });
             if (category) params.set('category', category);
             if (search) params.set('search', search);
-            const res = await fetch(`http://localhost:5000/api/events?${params}`);
+            const res = await fetch(`http://localhost:5001/api/events?${params}`);
             const data = await res.json();
             setEvents(data.data || []);
          } catch (err) {

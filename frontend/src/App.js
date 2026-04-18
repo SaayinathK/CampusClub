@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Outlet, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { AnimatePresence, motion } from 'framer-motion';
 import 'react-toastify/dist/ReactToastify.css';
@@ -148,6 +148,15 @@ const getBackdropConfig = (pathname) => {
   return matched || FALLBACK_BACKDROP;
 };
 
+const isRenderableComponent = (Component) => {
+  if (!Component) return false;
+  if (typeof Component === 'function') return true;
+  if (typeof Component === 'object' && Component !== null) {
+    return Boolean(Component.$$typeof || Component.render || Component.type);
+  }
+  return false;
+};
+
 function App() {
   const [events] = useState(initialEvents);
 
@@ -165,6 +174,26 @@ function AppShell({ events }) {
   const location = useLocation();
   const showStudentShell = !location.pathname.startsWith('/admin') && !location.pathname.startsWith('/community-admin');
   const backdrop = getBackdropConfig(location.pathname);
+  const transitionKey = location.pathname.startsWith('/admin')
+    ? '/admin'
+    : location.pathname.startsWith('/community-admin')
+      ? '/community-admin'
+      : location.pathname;
+
+  const safeElement = (Component, props = {}) => (
+    isRenderableComponent(Component) ? <Component {...props} /> : <NotFound />
+  );
+
+  const safeProtectedElement = (Component, roles, message) => {
+    if (!isRenderableComponent(ProtectedRoute) || !isRenderableComponent(Component)) {
+      return <NotFound />;
+    }
+    return (
+      <ProtectedRoute roles={roles} message={message}>
+        <Component />
+      </ProtectedRoute>
+    );
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-transparent text-slate-900">
@@ -180,86 +209,62 @@ function AppShell({ events }) {
         <div className="absolute top-1/3 -left-24 h-96 w-96 rounded-full bg-cyan-400/18 blur-3xl animate-blob animation-delay-2000" />
         <div className="absolute -bottom-20 right-1/4 h-80 w-80 rounded-full bg-blue-500/12 blur-3xl animate-blob animation-delay-4000" />
       </div>
-      {showStudentShell && <Navbar />}
+      {showStudentShell && isRenderableComponent(Navbar) && <Navbar />}
       <main className="relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
-            key={location.pathname}
+            key={transitionKey}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
           >
             <Routes location={location}>
-              <Route path="/" element={<Home events={events} />} />
+              <Route path="/" element={safeElement(Home, { events })} />
               <Route path="/events" element={
-                <ProtectedRoute message="Please sign in to browse campus events.">
-                  <Events />
-                </ProtectedRoute>
+                safeProtectedElement(Events, undefined, 'Please sign in to browse campus events.')
               } />
               <Route path="/clubs" element={
-                <ProtectedRoute message="Please sign in to browse campus clubs.">
-                  <Clubs />
-                </ProtectedRoute>
+                safeProtectedElement(Clubs, undefined, 'Please sign in to browse campus clubs.')
               } />
               <Route path="/events/:id" element={
-                <ProtectedRoute message="Please sign in to view event details.">
-                  <EventDetails />
-                </ProtectedRoute>
+                safeProtectedElement(EventDetails, undefined, 'Please sign in to view event details.')
               } />
-              <Route path="/signin" element={<SignIn />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/signin" element={safeElement(SignIn)} />
+              <Route path="/signup" element={safeElement(SignUp)} />
+              <Route path="/profile" element={safeElement(Profile)} />
 
-              {/* Admin — wrapped in sidebar layout */}
+              {/* Admin — shared layout shell to avoid remount blink */}
               <Route path="/admin" element={
-                <ProtectedRoute roles={['admin']}>
-                  <DashboardLayout><AdminDashboard /></DashboardLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/users" element={
-                <ProtectedRoute roles={['admin']}>
-                  <DashboardLayout><AdminUsers /></DashboardLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/communities" element={
-                <ProtectedRoute roles={['admin']}>
-                  <DashboardLayout><AdminCommunities /></DashboardLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/events" element={
-                <ProtectedRoute roles={['admin']}>
-                  <DashboardLayout><AdminEvents /></DashboardLayout>
-                </ProtectedRoute>
-              } />
+                isRenderableComponent(ProtectedRoute) && isRenderableComponent(DashboardLayout)
+                  ? <ProtectedRoute roles={['admin']}><DashboardLayout><Outlet /></DashboardLayout></ProtectedRoute>
+                  : <NotFound />
+              }>
+                <Route index element={isRenderableComponent(AdminDashboard) ? <AdminDashboard /> : <NotFound />} />
+                <Route path="users" element={isRenderableComponent(AdminUsers) ? <AdminUsers /> : <NotFound />} />
+                <Route path="communities" element={isRenderableComponent(AdminCommunities) ? <AdminCommunities /> : <NotFound />} />
+                <Route path="events" element={isRenderableComponent(AdminEvents) ? <AdminEvents /> : <NotFound />} />
+                <Route path="notifications" element={isRenderableComponent(StudentNotifications) ? <StudentNotifications /> : <NotFound />} />
+              </Route>
 
-              {/* Community Admin — wrapped in sidebar layout */}
+              {/* Community Admin — shared layout shell to avoid remount blink */}
               <Route path="/community-admin" element={
-                <ProtectedRoute roles={['community_admin']}>
-                  <DashboardLayout><CommunityAdminDashboard /></DashboardLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/community-admin/profile" element={
-                <ProtectedRoute roles={['community_admin']}>
-                  <DashboardLayout><CommunityAdminProfile /></DashboardLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/community-admin/members" element={
-                <ProtectedRoute roles={['community_admin']}>
-                  <DashboardLayout><CommunityAdminMembers /></DashboardLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/community-admin/events" element={
-                <ProtectedRoute roles={['community_admin']}>
-                  <DashboardLayout><CommunityAdminEvents /></DashboardLayout>
-                </ProtectedRoute>
-              } />
+                isRenderableComponent(ProtectedRoute) && isRenderableComponent(DashboardLayout)
+                  ? <ProtectedRoute roles={['community_admin']}><DashboardLayout><Outlet /></DashboardLayout></ProtectedRoute>
+                  : <NotFound />
+              }>
+                <Route index element={isRenderableComponent(CommunityAdminDashboard) ? <CommunityAdminDashboard /> : <NotFound />} />
+                <Route path="profile" element={isRenderableComponent(CommunityAdminProfile) ? <CommunityAdminProfile /> : <NotFound />} />
+                <Route path="members" element={isRenderableComponent(CommunityAdminMembers) ? <CommunityAdminMembers /> : <NotFound />} />
+                <Route path="events" element={isRenderableComponent(CommunityAdminEvents) ? <CommunityAdminEvents /> : <NotFound />} />
+                <Route path="notifications" element={isRenderableComponent(StudentNotifications) ? <StudentNotifications /> : <NotFound />} />
+              </Route>
 
               {/* Student */}
-              <Route path="/student" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />
-              <Route path="/student/profile" element={<ProtectedRoute roles={['student']}><StudentProfile /></ProtectedRoute>} />
-              <Route path="/student/registrations" element={<ProtectedRoute roles={['student']}><StudentRegistrations /></ProtectedRoute>} />
-              <Route path="/student/notifications" element={<ProtectedRoute roles={['student']}><StudentNotifications /></ProtectedRoute>} />
+              <Route path="/student" element={safeProtectedElement(StudentDashboard, ['student'])} />
+              <Route path="/student/profile" element={safeProtectedElement(StudentProfile, ['student'])} />
+              <Route path="/student/registrations" element={safeProtectedElement(StudentRegistrations, ['student'])} />
+              <Route path="/student/notifications" element={safeProtectedElement(StudentNotifications, ['student'])} />
 
               {/* Fallback */}
               <Route path="*" element={<NotFound />} />
@@ -267,7 +272,7 @@ function AppShell({ events }) {
           </motion.div>
         </AnimatePresence>
       </main>
-      {showStudentShell && <Footer />}
+      {showStudentShell && isRenderableComponent(Footer) && <Footer />}
     </div>
   );
 }

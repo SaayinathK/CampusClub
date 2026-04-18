@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../utils/api';
 
 const TYPE_ICON = {
@@ -6,6 +7,12 @@ const TYPE_ICON = {
   event_reminder:  '⏰',
   event_rejected:  '❌',
   event_cancelled: '🚫',
+  registration_confirmed: '✅',
+  registration_closing: '⌛',
+  account_approved: '✅',
+  account_rejected: '⚠️',
+  receipt_verified: '🧾',
+  receipt_rejected: '🧾',
 };
 
 export default function NotificationBell() {
@@ -80,14 +87,19 @@ export default function NotificationBell() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
             <span className="text-xs font-black uppercase tracking-widest text-slate-900">Notifications</span>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllRead}
-                className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors"
-              >
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button
+                  onClick={markAllRead}
+                  className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-widest transition-colors"
+                >
+                  Mark all read
+                </button>
+              )}
+              <Link to="/student/notifications" onClick={() => setOpen(false)} className="text-[10px] font-bold text-slate-500 hover:text-slate-900 uppercase tracking-widest transition-colors">
+                View all
+              </Link>
+            </div>
           </div>
 
           {/* List */}

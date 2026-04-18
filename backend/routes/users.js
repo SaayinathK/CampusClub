@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Community = require('../models/Community');
 const Membership = require('../models/Membership');
+const { createNotification } = require('../utils/notifications');
 const { protect, authorize } = require('../middleware/auth');
 
 // @route   GET /api/users
@@ -201,6 +202,14 @@ router.put('/:id/approve', protect, authorize('admin', 'community_admin'), async
     }
 
     const displayName = user.name || user.username;
+
+    await createNotification({
+      recipient: user._id,
+      type: 'account_approved',
+      title: 'Account Approved',
+      message: `Your account for ${displayName} has been approved and is now active.`,
+    });
+
     res.json({
       success: true,
       message: `User ${displayName} has been approved`,
@@ -237,6 +246,13 @@ router.put('/:id/reject', protect, authorize('admin', 'community_admin'), async 
         { status: 'rejected', rejectionReason: reason || 'Not specified' }
       );
     }
+
+    await createNotification({
+      recipient: user._id,
+      type: 'account_rejected',
+      title: 'Account Rejected',
+      message: `Your account was rejected.${reason ? ` Reason: ${reason}` : ''}`,
+    });
 
     res.json({
       success: true,

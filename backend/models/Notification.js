@@ -9,12 +9,16 @@ const NotificationSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: [
+      'account_approved',
+      'account_rejected',
       'event_published',
       'event_reminder',
       'event_rejected',
       'event_cancelled',
       'registration_confirmed',
       'registration_closing',
+      'receipt_verified',
+      'receipt_rejected',
     ],
     required: true,
   },

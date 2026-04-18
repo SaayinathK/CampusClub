@@ -116,41 +116,47 @@ export default function CommunityAdminDashboard() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10 py-10 animate-in fade-in duration-700">
-      
-      {/* Header Command */}
-      <motion.div initial={rise.initial} animate={rise.animate} transition={{ duration: 0.6 }} className="card-modern p-10 md:p-12 relative overflow-hidden bg-white">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-50 rounded-full blur-3xl opacity-60 -mr-40 -mt-40 pointer-events-none" />
-          
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 relative z-10">
-             <div className="flex items-center gap-6 md:gap-8 min-w-0">
-                <div className="w-20 h-20 rounded-[2rem] bg-blue-600 text-white flex items-center justify-center shadow-2xl shrink-0">
-                   <Zap size={36} strokeWidth={2.5} />
-                </div>
-                <div className="min-w-0">
-                   <div className="flex items-center gap-3 mb-2">
-                      <div className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-[9px] font-black uppercase tracking-widest border border-blue-200">
-                         COMMANDER ACCESS
-                      </div>
-                      <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Global Operations Division</div>
-                   </div>
-                   <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-none uppercase tracking-tight truncate">
-                      {community?.name}
-                   </h1>
-                   <p className="text-slate-500 font-medium text-sm mt-3 uppercase tracking-wide">Elite Community Administration Terminal</p>
-                </div>
-             </div>
+    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-transparent animate-in fade-in duration-700">
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-cyan-600/10 rounded-full mix-blend-screen filter blur-[150px] animate-blob pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full mix-blend-screen filter blur-[150px] animation-delay-4000 animate-blob pointer-events-none" />
 
-             <div className="flex flex-wrap gap-3 lg:justify-end">
-                <Link to="/community-admin/events" className="btn-secondary h-12 px-8 text-[10px] font-black uppercase flex items-center gap-2">
-                   <Calendar size={16} /> Deploy Scenarios
-                </Link>
-                <Link to="/community-admin/members" className="btn-primary h-12 px-8 text-[10px] font-black uppercase flex items-center gap-2 shadow-xl">
-                   <Users size={16} strokeWidth={3} /> Inspect Personnel
-                </Link>
+      <div className="max-w-7xl mx-auto relative z-10 space-y-8">
+
+      {/* Header Command */}
+      <motion.header initial={rise.initial} animate={rise.animate} transition={{ duration: 0.6 }} className="surface-panel rounded-[2.5rem] p-8 md:p-10 border border-blue-100 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 shadow-2xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-400/5 to-blue-600/10 opacity-90 pointer-events-none" />
+          <div className="absolute right-0 top-0 w-64 h-full hidden xl:block pointer-events-none opacity-55">
+            <img
+              src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1200&auto=format&fit=crop"
+              alt="Community dashboard"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-white/25 via-white/60 to-transparent" />
+          </div>
+          
+          <div className="flex items-center gap-5 md:gap-6 relative z-10 min-w-0">
+             <div className="w-16 h-16 rounded-[1.35rem] bg-gradient-to-br from-cyan-400 to-blue-500 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.25)] shrink-0">
+                <div className="w-full h-full bg-white rounded-[1.25rem] flex items-center justify-center text-3xl shadow-sm">⚡</div>
+             </div>
+             <div className="min-w-0">
+                <h2 className="text-3xl md:text-5xl font-black mb-2 tracking-tight leading-none">
+                   COMMUNITY <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">DASHBOARD</span>
+                </h2>
+                <p className="text-slate-500 font-medium text-sm md:text-base">
+                   {community?.name} — Unified command center for members, requests, and events
+                </p>
              </div>
           </div>
-      </motion.div>
+
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 relative z-10 w-full xl:w-auto xl:justify-end">
+             <Link to="/community-admin/events" className="px-6 py-3 rounded-full font-bold text-blue-700 transition-all hover:-translate-y-1 border border-blue-200 bg-blue-50/70 hover:bg-blue-100 flex items-center justify-center gap-2 text-sm uppercase tracking-wider shadow-sm">
+                <Calendar size={16} /> Events
+             </Link>
+             <Link to="/community-admin/members" className="px-6 py-3 rounded-full font-bold text-white transition-all hover:-translate-y-1 flex items-center justify-center gap-2 text-sm uppercase tracking-wider bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-[0_10px_28px_rgba(37,99,235,0.28)]">
+                <Users size={16} strokeWidth={3} /> Members
+             </Link>
+          </div>
+      </motion.header>
 
       {/* Metrics Matrix */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -550,6 +556,8 @@ export default function CommunityAdminDashboard() {
             </div>
          </div>
       </div>
+
+         </div>
     </div>
   );
 }

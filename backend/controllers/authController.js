@@ -22,6 +22,9 @@ exports.sendOTP = async (req, res) => {
     try {
         const { email } = req.body;
 
+        console.log(req.body);
+        console.log(res);
+
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -207,12 +210,15 @@ exports.login = async (req, res) => {
         const ROLE_MAP = { community: 'community_admin', sliit: 'student' };
         const normalizedRole = ROLE_MAP[user.role] || user.role;
 
-        // Generate JWT token — include normalized role so authorize() middleware works
+        // Generate JWT token with tokenVersion. No time-based expiry; invalidated on logout.
         const tokenSecret = process.env.JWT_SECRET || 'supersecretkey';
         const token = jwt.sign(
-            { id: user._id, role: normalizedRole },
-            tokenSecret,
-            { expiresIn: '365d' }
+            {
+                id: user._id,
+                role: normalizedRole,
+                tokenVersion: user.tokenVersion || 0,
+            },
+            tokenSecret
         );
 
         res.status(200).json({
@@ -230,5 +236,16 @@ exports.login = async (req, res) => {
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Logout user and invalidate currently issued JWTs
+exports.logout = async (req, res) => {
+    try {
+        await User.findByIdAndUpdate(req.user.id, { $inc: { tokenVersion: 1 } });
+        return res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+        console.error('Logout error:', error);
+        return res.status(500).json({ message: 'Server error' });
     }
 };

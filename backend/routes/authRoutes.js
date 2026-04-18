@@ -23,4 +23,9 @@ router.post('/login', authController.login);
 // @access  Private
 router.get('/me', protect, authController.getMe);
 
+// @route   POST /api/auth/logout
+// @desc    Logout current user and invalidate existing tokens
+// @access  Private
+router.post('/logout', protect, authController.logout);
+
 module.exports = router;

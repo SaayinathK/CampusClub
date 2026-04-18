@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../utils/api';
+import { 
+  Globe, Shield, LayoutDashboard, Edit3, Eye, 
+  MapPin, Link2, Facebook, Instagram, Twitter, 
+  Zap, Clock, ShieldCheck, XCircle, Camera, CheckSquare,
+   Share2, Info, Image as ImageIcon, Users, Calendar
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORIES = ['Technology', 'Arts', 'Sports', 'Academic', 'Cultural', 'Business', 'Science', 'Social', 'Other'];
 
@@ -10,7 +17,7 @@ export default function CommunityAdminProfile() {
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('edit');
+  const [activeTab, setActiveTab] = useState('configuration');
 
   useEffect(() => {
     api.get('/communities/my/profile').then(res => {
@@ -24,7 +31,8 @@ export default function CommunityAdminProfile() {
         coverImage: c.coverImage || '', 
         socialLinks: c.socialLinks || {} 
       });
-    }).catch(() => toast.error('Failed to load profile')).finally(() => setLoading(false));
+    }).catch(() => toast.error('Neural synchronization failure: Identity unreachable'))
+    .finally(() => setLoading(false));
   }, []);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -35,285 +43,305 @@ export default function CommunityAdminProfile() {
     setSaving(true);
     try {
       await api.put(`/communities/${community._id}`, form);
-      toast.success('Community profile updated!');
+      toast.success('Institutional specifications updated');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update');
+      toast.error(err.response?.data?.message || 'Synchronization abort');
     } finally {
       setSaving(false);
     }
   };
 
-  const getCategoryIcon = (category) => {
-    const icons = {
-      Technology: '💻', Arts: '🎨', Sports: '⚽', Academic: '📚',
-      Cultural: '🎭', Business: '💼', Science: '🔬', Social: '🤝', Other: '🌟'
-    };
-    return icons[category] || '🏛️';
-  };
-
   if (loading) return (
-     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
-        <span className="text-pink-600 font-bold tracking-widest uppercase text-sm animate-pulse">Initializing Profile...</span>
-     </div>
+    <div className="py-40 flex flex-col items-center justify-center animate-pulse opacity-50">
+       <div className="w-12 h-12 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+       <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">Initializing Identity Buffer</p>
+    </div>
   );
 
+  const tabs = [
+    { id: 'configuration', label: 'Tactical Config', icon: Edit3 },
+    { id: 'preview', label: 'Nodes Preview', icon: Eye },
+  ];
+
+  const rise = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+  };
+
   return (
-    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-slate-50">
-      {/* Dynamic Background Effects */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-cyan-300/30 rounded-full filter blur-[150px] animate-blob pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-pink-300/30 rounded-full filter blur-[150px] animation-delay-4000 animate-blob pointer-events-none" />
+    <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-transparent animate-in fade-in duration-700">
+      <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-cyan-600/10 rounded-full mix-blend-screen filter blur-[150px] animate-blob pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full mix-blend-screen filter blur-[150px] animation-delay-4000 animate-blob pointer-events-none" />
 
-      <div className="max-w-4xl mx-auto relative z-10 space-y-8">
-        
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          <div>
-            <h1 className="text-3xl md:text-5xl font-black mb-1 tracking-tight flex items-center gap-4">
-              <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-pink-500 text-white shadow-lg flex items-center justify-center text-3xl leading-none">🏛️</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-pink-600 leading-tight">COMMUNITY SETUP</span>
-            </h1>
-            <p className="text-slate-500 font-medium ml-[72px]">Manage and customize your club's public perception</p>
-          </div>
-          <Link to="/community-admin" className="bg-white hover:bg-slate-50 px-6 py-3 rounded-full font-bold text-slate-700 transition-all hover:-translate-y-1 border border-slate-200 flex items-center gap-2 text-sm uppercase tracking-wider shadow-sm">
-            ← Dashboard
-          </Link>
-        </header>
-
-        {/* Status Banner */}
-        {community?.status !== 'approved' && (
-          <div className={`bg-white rounded-2xl p-5 border-l-4 flex items-center gap-4 shadow-sm ${community?.status === 'pending' ? 'border-l-amber-500 border-slate-200 bg-amber-50' : 'border-l-rose-500 border-slate-200 bg-rose-50'}`}>
-            <span className="text-4xl drop-shadow-sm">{community?.status === 'pending' ? '⏳' : '❌'}</span>
-            <div>
-              <h3 className={`font-black text-lg ${community?.status === 'pending' ? 'text-amber-700' : 'text-rose-700'}`}>
-                {community?.status === 'pending' ? 'Pending Approval' : 'Application Rejected'}
-              </h3>
-              <p className="text-slate-700 text-sm mt-0.5">
-                {community?.status === 'pending' 
-                  ? 'Your community is awaiting System Admin review. You can customize the profile offline in the meantime.' 
-                  : 'Your community was rejected. Review feedback and contact administration.'}
-              </p>
+      <div className="max-w-6xl mx-auto relative z-10 space-y-8">
+         <header className="surface-panel rounded-[2.5rem] p-8 md:p-10 border border-blue-100 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6 shadow-2xl relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-400/5 to-blue-600/10 opacity-90 pointer-events-none" />
+            <div className="absolute right-0 top-0 w-64 h-full hidden xl:block pointer-events-none opacity-55">
+               <img
+                  src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1200&auto=format&fit=crop"
+                  alt="Community profile"
+                  className="w-full h-full object-cover"
+               />
+               <div className="absolute inset-0 bg-gradient-to-l from-white/25 via-white/60 to-transparent" />
             </div>
-          </div>
-        )}
 
-        {/* Profile Card */}
-        <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm relative">
-          
-          {/* Cover Art Wrapper */}
-          <div className="relative group/cover">
+            <div className="flex items-center gap-5 md:gap-6 relative z-10 min-w-0">
+               <div className="w-16 h-16 rounded-[1.35rem] bg-gradient-to-br from-cyan-400 to-blue-500 p-[2px] shadow-[0_0_20px_rgba(6,182,212,0.25)] shrink-0">
+                  <div className="w-full h-full bg-white rounded-[1.25rem] flex items-center justify-center text-3xl shadow-sm">🏢</div>
+               </div>
+               <div className="min-w-0">
+                  <h2 className="text-3xl md:text-5xl font-black mb-2 tracking-tight leading-none">
+                     COMMUNITY <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">PROFILE</span>
+                  </h2>
+                  <p className="text-slate-500 font-medium text-sm md:text-base">
+                     {community?.name} — Configure identity, visuals, and links
+                  </p>
+               </div>
+            </div>
+
+            <div className="relative z-10 w-full xl:w-auto xl:justify-end flex">
+               <Link to="/community-admin" className="px-6 py-3 rounded-full font-bold text-blue-700 transition-all hover:-translate-y-1 border border-blue-200 bg-blue-50/70 hover:bg-blue-100 flex items-center gap-2 text-sm uppercase tracking-wider shadow-sm">
+                  ← Dashboard
+               </Link>
+            </div>
+         </header>
+
+         <div className="surface-panel overflow-hidden bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl">
+          {/* Institutional Hero */}
+          <div className="relative h-48 bg-slate-100 overflow-hidden group">
              {form.coverImage ? (
-               <div className="h-44 md:h-64 bg-cover bg-center relative" style={{ backgroundImage: `url(${form.coverImage})` }}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-50 via-transparent to-black/30" />
-               </div>
+                <img src={form.coverImage} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3s]" alt="Cover" />
              ) : (
-               <div className="h-44 md:h-64 bg-gradient-to-br from-cyan-100 via-slate-100 to-pink-100 relative">
-                  <div className="absolute inset-0 bg-white/40 mix-blend-multiply" />
-                  <div className="absolute inset-0 bg-grid-slate-900/[0.05] bg-[size:30px_30px]" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-50 to-transparent" />
-               </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-700" />
              )}
-             <span className="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-700 border border-slate-200 shadow-sm">Cover Header</span>
+             <div className="absolute inset-0 bg-black/30" />
+             <div className="absolute bottom-4 right-6 px-3 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 text-[8px] font-black uppercase tracking-widest text-white/50">
+                Institutional Banner Node
+             </div>
           </div>
-          
-          <div className="px-6 md:px-10 pb-10 relative">
-             <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-20 sm:-mt-24 mb-10 text-center sm:text-left relative z-10">
-                <div 
-                   className="w-36 h-36 md:w-44 md:h-44 rounded-3xl border-4 border-white bg-slate-100 flex items-center justify-center text-6xl font-black text-slate-700 shadow-md shrink-0 bg-cover bg-center overflow-hidden relative group/logo"
-                   style={form.logo ? { backgroundImage: `url(${form.logo})` } : {}}
-                >
-                   {!form.logo && (
-                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-100 to-pink-100 flex items-center justify-center">
-                       {form.name?.charAt(0)}
-                     </div>
-                   )}
-                </div>
-                
-                <div className="flex-1 pb-2 min-w-0">
-                   <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-3 leading-tight truncate px-2 sm:px-0">
-                     {form.name || 'Untitled Community'}
-                   </h2>
-                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                     <span className={`px-3 py-1.5 border text-xs font-black uppercase tracking-widest flex items-center gap-2 rounded-md ${community?.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : community?.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
-                       <span className="w-1.5 h-1.5 rounded-full bg-current shadow-[0_0_8px_currentColor]"></span> {community?.status}
-                     </span>
-                     <span className="px-3 py-1.5 bg-gradient-to-r from-cyan-50 to-pink-50 border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-widest flex items-center gap-1.5 rounded-md">
-                       {getCategoryIcon(form.category)} {form.category}
-                     </span>
+
+          <div className="px-10 pb-10">
+             <div className="flex flex-col md:flex-row items-center md:items-end gap-8 -mt-16 mb-10 relative z-10">
+                <div className="relative group">
+                   <div className="w-40 h-40 rounded-[2.5rem] border-[6px] border-white bg-blue-600 flex items-center justify-center text-5xl font-black text-white shadow-2xl overflow-hidden shrink-0">
+                      {form.logo ? <img src={form.logo} className="w-full h-full object-cover" alt="Logo" /> : form.name?.charAt(0)}
+                   </div>
+                   <div className="absolute bottom-2 right-2 w-10 h-10 rounded-xl bg-blue-600 border-4 border-white flex items-center justify-center text-white shadow-lg">
+                      <Camera size={18} strokeWidth={3} />
                    </div>
                 </div>
+
+                <div className="flex-1 text-center md:text-left space-y-2">
+                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                      <div className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest border border-blue-100 uppercase tracking-widest">
+                         {form.category} SECTOR
+                      </div>
+                      <div className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest ${community?.status === 'approved' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                         <div className={`w-1.5 h-1.5 rounded-full ${community?.status === 'approved' ? 'bg-emerald-500' : 'bg-amber-500'}`} /> {community?.status} Registry
+                      </div>
+                   </div>
+                   <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tight leading-none">{form.name || 'Untitled Entity'}</h2>
+                   <p className="text-slate-500 font-medium text-sm max-w-xl uppercase tracking-wider">Mission Control Node established {new Date(community?.createdAt).getFullYear()}.</p>
+                </div>
              </div>
 
-             <div className="flex justify-center sm:justify-start gap-8 border-b border-slate-200 mb-8">
-               {[
-                 { id: 'edit', label: 'Edit Configuration', icon: '⚙️' },
-                 { id: 'preview', label: 'Live Preview', icon: '👁️' }
-               ].map(t => (
-                 <button
-                   key={t.id}
-                   onClick={() => setActiveTab(t.id)}
-                   className={`pb-4 font-bold text-sm uppercase tracking-wider transition-all border-b-2 flex items-center gap-2 ${activeTab === t.id ? 'border-pink-600 text-pink-600' : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
-                 >
-                   <span className="text-lg leading-none">{t.icon}</span> {t.label}
-                 </button>
-               ))}
-             </div>
-
-             {activeTab === 'edit' ? (
-                <form onSubmit={handleSave} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="space-y-2 group">
-                       <label className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 ml-1">
-                         <span className="text-cyan-600">🏷️</span> Community Name
-                       </label>
-                       <input 
-                         required 
-                         value={form.name || ''} 
-                         onChange={e => set('name', e.target.value)} 
-                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-slate-900 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 focus:bg-white transition-all font-medium"
-                         placeholder="The official title"
-                       />
-                     </div>
-                     <div className="space-y-2 group">
-                       <label className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 ml-1">
-                         <span className="text-pink-600">📂</span> Primary Category
-                       </label>
-                       <select 
-                         value={form.category || ''} 
-                         onChange={e => set('category', e.target.value)}
-                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-slate-900 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 focus:bg-white transition-all font-medium appearance-none cursor-pointer"
-                       >
-                         {CATEGORIES.map(c => <option key={c} value={c} className="bg-white">{getCategoryIcon(c)} {c}</option>)}
-                       </select>
-                     </div>
-                  </div>
-
-                  <div className="space-y-2 group relative">
-                     <label className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 ml-1">
-                       <span className="text-purple-600">📝</span> Charter / Description
-                     </label>
-                     <textarea 
-                       required 
-                       rows={5} 
-                       value={form.description || ''} 
-                       onChange={e => set('description', e.target.value)} 
-                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:bg-white transition-all font-medium resize-y leading-relaxed"
-                       placeholder="Detail your club's vision, routine activities, and member expectations..."
-                     />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 rounded-3xl bg-slate-50 border border-slate-200">
-                     <div className="space-y-2 group">
-                       <label className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 ml-1">
-                         <span className="text-blue-600">🖼️</span> Emblem / Logo URL
-                       </label>
-                       <input 
-                         value={form.logo || ''} 
-                         onChange={e => set('logo', e.target.value)} 
-                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-sm font-mono placeholder:font-sans"
-                         placeholder="https://imgur.com/...png"
-                       />
-                     </div>
-                     <div className="space-y-2 group">
-                       <label className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 ml-1">
-                         <span className="text-emerald-600">🎨</span> Cover Header URL
-                       </label>
-                       <input 
-                         value={form.coverImage || ''} 
-                         onChange={e => set('coverImage', e.target.value)} 
-                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all text-sm font-mono placeholder:font-sans"
-                         placeholder="https://imgur.com/...jpg"
-                       />
-                     </div>
-                  </div>
-
-                  <div className="space-y-4">
-                     <label className="text-xs font-bold text-slate-600 uppercase tracking-widest flex items-center gap-2 ml-1">
-                       <span className="text-yellow-500">🔗</span> External Social Links
-                     </label>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                       {[
-                         { key: 'website', label: '🌐 Official Site', placeholder: 'https://...' },
-                         { key: 'facebook', label: '📘 Facebook Page', placeholder: 'https://facebook.com/...' },
-                         { key: 'instagram', label: '📷 Instagram Profile', placeholder: 'https://instagram.com/...' },
-                         { key: 'twitter', label: '🐦 X / Twitter', placeholder: 'https://twitter.com/...' }
-                       ].map(s => (
-                         <div key={s.key} className="flex flex-col gap-1.5 focus-within:text-slate-900 text-slate-600">
-                           <span className="text-[10px] uppercase font-black tracking-widest ml-1">{s.label}</span>
-                           <input 
-                             value={form.socialLinks?.[s.key] || ''} 
-                             onChange={e => setSocial(s.key, e.target.value)} 
-                             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 focus:border-slate-300 focus:bg-white transition-all outline-none text-sm placeholder:text-slate-400"
-                             placeholder={s.placeholder}
-                           />
-                         </div>
-                       ))}
-                     </div>
-                  </div>
-
-                  <div className="pt-8 border-t border-slate-200">
-                     <button 
-                       type="submit" 
-                       disabled={saving}
-                       className="w-full md:w-auto px-10 py-4 rounded-xl font-black text-white uppercase tracking-widest bg-gradient-to-r from-cyan-600 to-pink-600 hover:shadow-[0_0_30px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:-translate-y-1"
-                     >
-                       {saving ? 'Transmitting...' : '💾 Save Profile Architecture'}
-                     </button>
-                  </div>
-                </form>
-             ) : (
-                <div className="bg-slate-50 rounded-3xl p-8 border border-slate-200 shadow-sm">
-                   <h3 className="text-xl font-bold text-pink-600 mb-6 flex items-center gap-2">
-                     <span className="animate-pulse w-2 h-2 rounded-full bg-pink-500" /> Active Preview Data
-                   </h3>
-                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
-                     <div>
-                       <dt className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Display Name</dt>
-                       <dd className="text-slate-900 font-medium">{form.name || '—'}</dd>
-                     </div>
-                     <div>
-                       <dt className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Categorization</dt>
-                       <dd className="text-slate-900 font-medium flex items-center gap-2">{form.category ? <>{getCategoryIcon(form.category)} {form.category}</> : '—'}</dd>
-                     </div>
-                     <div className="sm:col-span-2">
-                       <dt className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Public Charter</dt>
-                       <dd className="text-slate-700 text-sm leading-relaxed max-w-2xl">{form.description || '—'}</dd>
-                     </div>
-                     {Object.entries(form.socialLinks || {}).some(([_, v]) => v) && (
-                       <div className="sm:col-span-2 border-t border-slate-200 pt-6 mt-2">
-                         <dt className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Linked Networks</dt>
-                         <dd className="flex flex-wrap gap-3">
-                           {Object.entries(form.socialLinks).map(([k, v]) => v && (
-                             <a key={k} href={v} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-cyan-700 hover:bg-cyan-50 hover:border-cyan-200 transition-all capitalize flex items-center gap-2">
-                               {k} ↗
-                             </a>
-                           ))}
-                         </dd>
-                       </div>
-                     )}
-                   </dl>
+             {/* Registry Control Interface */}
+             {community?.status !== 'approved' && (
+                <div className="mb-10 p-6 rounded-3xl bg-slate-900 border-none relative overflow-hidden flex flex-col md:flex-row items-center gap-6">
+                   <div className="absolute top-0 right-0 p-6 opacity-10"><ShieldCheck size={80} fill="white" /></div>
+                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${community?.status === 'pending' ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400'}`}>
+                      {community?.status === 'pending' ? <Clock size={32} /> : <XCircle size={32} />}
+                   </div>
+                   <div className="space-y-1 text-center md:text-left">
+                      <h4 className={`text-lg font-black uppercase tracking-tight leading-none ${community?.status === 'pending' ? 'text-amber-400' : 'text-rose-400'}`}>
+                         {community?.status === 'pending' ? 'Clearance Processing' : 'Access Denied'}
+                      </h4>
+                      <p className="text-slate-400 text-xs font-bold uppercase tracking-widest opacity-80">
+                         {community?.status === 'pending' ? 'Neural audit in progress across the institutional grid.' : 'Operational sequence aborted by global board admins.'}
+                      </p>
+                   </div>
                 </div>
              )}
-          </div>
-        </div>
 
-        {/* Global Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-           {[
-             { label: 'Registered Members', value: community?.members?.length || 0, icon: '👥', color: 'text-cyan-600' },
-             { label: 'Archived & Live Events', value: community?.events?.length || 0, icon: '📅', color: 'text-pink-600' },
-             { label: 'Date of Origin', value: new Date(community?.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }), icon: '🎂', color: 'text-purple-600' },
-             { label: 'Operational Status', value: community?.status === 'approved' ? 'Online' : 'Offline', icon: '⚡', color: community?.status === 'approved' ? 'text-emerald-600' : 'text-amber-600' }
-           ].map((s, i) => (
-             <div key={i} className="bg-white rounded-3xl p-6 border border-slate-200 text-center flex flex-col justify-center items-center hover:bg-slate-50 transition-colors group shadow-sm">
-                <span className="text-3xl mb-3 opacity-80 group-hover:scale-125 transition-transform">{s.icon}</span>
-                <span className={`text-2xl font-black mb-1 tracking-tight ${s.color}`}>{s.value}</span>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">{s.label}</span>
+             {/* Tabbed Configuration Control */}
+             <div className="flex gap-10 border-b border-slate-100 mb-10">
+                {tabs.map(tab => (
+                   <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`pb-5 relative text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-3 ${activeTab === tab.id ? 'text-blue-600' : 'text-slate-400 hover:text-slate-900'}`}
+                   >
+                      <tab.icon size={18} />
+                      {tab.label}
+                      {activeTab === tab.id && (
+                         <motion.div layoutId="profile-tab" className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600 rounded-full" />
+                      )}
+                   </button>
+                ))}
              </div>
-           ))}
-        </div>
 
+             <motion.div initial={rise.initial} animate={rise.animate} transition={{ duration: 0.5 }}>
+                {activeTab === 'configuration' ? (
+                   <form onSubmit={handleSave} className="space-y-10">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                         <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                               <LayoutDashboard size={14} className="text-blue-500" /> Operational Alias
+                            </label>
+                            <input
+                               value={form.name || ''}
+                               onChange={e => set('name', e.target.value)}
+                               required
+                               className="w-full h-14 input-modern px-6 text-sm font-bold uppercase"
+                               placeholder="Assign Alias..."
+                            />
+                         </div>
+
+                         <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                               <Shield size={14} className="text-blue-500" /> Department Sector
+                            </label>
+                            <select
+                               value={form.category || ''}
+                               onChange={e => set('category', e.target.value)}
+                               className="w-full h-14 input-modern px-6 text-sm font-bold appearance-none bg-white cursor-pointer"
+                            >
+                               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                         </div>
+                      </div>
+
+                      <div className="space-y-4">
+                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <Info size={14} className="text-blue-500" /> Tactical Charter / Description
+                         </label>
+                         <textarea
+                            rows={5}
+                            value={form.description || ''}
+                            onChange={e => set('description', e.target.value)}
+                            required
+                            placeholder="Detail your operational vision, tactical goals, and member expectations..."
+                            className="w-full input-modern p-6 h-40 resize-none text-sm font-medium leading-relaxed"
+                         />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 p-8 rounded-[2rem] bg-slate-100/50 border border-slate-100">
+                         <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                               <CheckSquare size={14} className="text-blue-500" /> Logo Registry Node (URL)
+                            </label>
+                            <input
+                               value={form.logo || ''}
+                               onChange={e => set('logo', e.target.value)}
+                               className="w-full h-12 input-modern px-5 text-[11px] font-mono"
+                               placeholder="https://..."
+                            />
+                         </div>
+                         <div className="space-y-4">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                               <ImageIcon size={14} className="text-blue-500" /> Cover Array Node (URL)
+                            </label>
+                            <input
+                               value={form.coverImage || ''}
+                               onChange={e => set('coverImage', e.target.value)}
+                               className="w-full h-12 input-modern px-5 text-[11px] font-mono"
+                               placeholder="https://..."
+                            />
+                         </div>
+                      </div>
+
+                      <div className="space-y-6">
+                         <h4 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em] flex items-center gap-2">
+                            <Share2 size={14} className="text-blue-600" /> External Comm-Link Matrix
+                         </h4>
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {[
+                               { key: 'website', label: 'Global Portal', icon: Globe },
+                               { key: 'facebook', label: 'Face Comm', icon: Facebook },
+                               { key: 'instagram', label: 'Insta Feed', icon: Instagram },
+                               { key: 'twitter', label: 'Neural TWT', icon: Twitter },
+                            ].map(s => (
+                               <div key={s.key} className="relative group">
+                                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-hover:text-blue-600 transition-colors">
+                                     <s.icon size={16} />
+                                  </div>
+                                  <input
+                                     value={form.socialLinks?.[s.key] || ''}
+                                     onChange={e => setSocial(s.key, e.target.value)}
+                                     placeholder={s.label}
+                                     className="w-full h-12 input-modern pl-14 pr-6 text-xs font-bold"
+                                  />
+                               </div>
+                            ))}
+                         </div>
+                      </div>
+
+                      <div className="pt-10 flex justify-end">
+                         <button
+                            type="submit"
+                            disabled={saving}
+                            className="btn-primary h-14 px-12 text-xs font-black uppercase flex items-center gap-3 shadow-xl"
+                         >
+                            {saving ? 'Synchronizing Archive...' : <><Zap size={18} /> Update Institutional Specs</>}
+                         </button>
+                      </div>
+                   </form>
+                ) : (
+                   <div className="space-y-12 animate-in fade-in duration-500 pt-6">
+                      <div className="p-8 rounded-[2rem] bg-slate-50 border border-slate-100 space-y-8">
+                         <div className="space-y-4">
+                            <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em] flex items-center gap-2">
+                               <Info size={14} /> Tactical Summary
+                            </h4>
+                            <p className="text-slate-600 text-lg leading-relaxed font-medium">{form.description || 'Institutional Charter documentation pending upload.'}</p>
+                         </div>
+
+                         {Object.values(form.socialLinks || {}).some(v => v) && (
+                            <div className="space-y-6 pt-6 border-t border-slate-200">
+                               <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-[0.3em] flex items-center gap-2">
+                                  <Link2 size={14} /> Propagation Nodes
+                               </h4>
+                               <div className="flex flex-wrap gap-4">
+                                  {Object.entries(form.socialLinks || {}).map(([k, v]) => v && (
+                                     <a key={k} href={v} target="_blank" rel="noopener noreferrer" className="h-12 px-6 rounded-xl bg-white border border-slate-100 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm">
+                                        {k} Node <Link2 size={12} />
+                                     </a>
+                                  ))}
+                               </div>
+                            </div>
+                         )}
+                      </div>
+
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                         {[
+                            { label: 'Network Size', value: community?.members?.length || 0, icon: Users, color: 'text-blue-600' },
+                            { label: 'Scenario Log', value: community?.events?.length || 0, icon: Calendar, color: 'text-indigo-600' },
+                            { label: 'Origin Cycle', value: new Date(community?.createdAt).getFullYear(), icon: Clock, color: 'text-slate-400' },
+                            { label: 'Grid Status', value: community?.status === 'approved' ? 'ONLINE' : 'LOCKED', icon: ShieldCheck, color: community?.status === 'approved' ? 'text-emerald-500' : 'text-amber-500' },
+                         ].map((s, i) => (
+                            <div key={i} className="card-modern p-6 text-center space-y-1 bg-white border-none shadow-lg">
+                               <div className="flex justify-center mb-2"><s.icon size={20} className={s.color} /></div>
+                               <div className="text-xl font-black text-slate-900 leading-none">{s.value}</div>
+                               <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{s.label}</div>
+                            </div>
+                         ))}
+                      </div>
+                   </div>
+                )}
+             </motion.div>
+          </div>
+
+          <div className="bg-slate-950 p-8 flex flex-col md:flex-row items-center justify-between gap-6 border-t border-white/5">
+             <div className="flex items-center gap-3 text-white/40 uppercase font-black text-[9px] tracking-[0.3em]">
+                <ShieldCheck size={12} /> Institutional Integrity Active
+             </div>
+             <div className="text-white/20 text-[9px] font-black uppercase tracking-widest">
+                Identity Cluster - Node 02.4.X - Secured
+             </div>
+          </div>
       </div>
+
+         </div>
     </div>
   );
 }

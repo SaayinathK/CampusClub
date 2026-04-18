@@ -83,11 +83,20 @@ export const AuthProvider = ({ children }) => {
     return res.data;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    toast.info('Logged out successfully');
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await api.post('/auth/logout');
+      }
+    } catch {
+      // Always clear local state even if server logout fails.
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      toast.info('Logged out successfully');
+    }
   };
 
   const updateProfile = async (data) => {

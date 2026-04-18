@@ -46,18 +46,18 @@ const SignIn = () => {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-20 bg-slate-50 text-slate-900 px-4 md:px-6 overflow-hidden relative flex flex-col justify-center">
+    <div className="min-h-screen pt-32 pb-20 bg-transparent text-slate-900 px-4 md:px-6 overflow-hidden relative flex flex-col justify-center">
       {/* Dynamic Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           animate={{ x: [0, 40, 0], y: [0, -40, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[10%] right-[15%] w-[40%] h-[40%] bg-blue-300/30 rounded-full blur-[120px]"
+          className="absolute top-[10%] right-[15%] w-[40%] h-[40%] bg-sky-500/18 rounded-full blur-[120px]"
         />
         <motion.div
           animate={{ x: [0, -40, 0], y: [0, 40, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-[10%] left-[15%] w-[40%] h-[40%] bg-purple-300/30 rounded-full blur-[120px]"
+          className="absolute bottom-[10%] left-[15%] w-[40%] h-[40%] bg-blue-600/18 rounded-full blur-[120px]"
         />
       </div>
 
@@ -67,7 +67,7 @@ const SignIn = () => {
             initial={{ scale: 0, rotate: -10 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', damping: 15 }}
-            className="w-20 h-20 bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm"
+            className="w-20 h-20 bg-gradient-to-br from-sky-500/20 to-blue-500/20 border border-cyan-400/20 text-cyan-300 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(56,189,248,0.25)]"
           >
             <LogIn size={36} />
           </motion.div>
@@ -76,8 +76,8 @@ const SignIn = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-6xl font-black mb-3 uppercase tracking-tighter"
           >
-            <span className="text-slate-900 drop-shadow-sm">Welcome </span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600">Back</span>
+            <span className="text-slate-900">Welcome </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-blue-400">Back</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}
@@ -93,13 +93,13 @@ const SignIn = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="rounded-[2.5rem] bg-white border border-slate-200 p-10 shadow-lg relative overflow-hidden"
+          className="rounded-[2.5rem] bg-white/90 border border-slate-200 p-10 backdrop-blur-3xl shadow-2xl relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
 
           <form onSubmit={handleSignIn} className="space-y-6 relative z-10">
             {redirectMessage && (
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 text-blue-700 text-xs font-bold tracking-wide flex items-center gap-2">
+              <div className="bg-cyan-50 border border-cyan-200 rounded-2xl px-4 py-3 text-cyan-700 text-xs font-bold tracking-wide flex items-center gap-2">
                 <Info size={14} className="shrink-0" />
                 {redirectMessage}
               </div>
@@ -110,15 +110,15 @@ const SignIn = () => {
               </div>
             )}
             <div className="space-y-2 group">
-              <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-blue-600 transition-colors ml-1">Email Address</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 group-focus-within:text-cyan-300 transition-colors ml-1">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={20} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-cyan-300 transition-colors" size={20} />
                 <input
                   type="email"
                   name="email"
                   required
                   placeholder="name@example.com"
-                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-900 shadow-sm placeholder:text-slate-400"
+                  className="theme-input pl-12 shadow-inner placeholder:text-slate-500"
                   onChange={handleInputChange}
                 />
               </div>
@@ -126,17 +126,17 @@ const SignIn = () => {
 
             <div className="space-y-2 group">
               <div className="flex justify-between items-center ml-1">
-                <label className="text-xs font-black uppercase tracking-widest text-slate-500 group-focus-within:text-purple-600 transition-colors">Password</label>
-                <button type="button" className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-purple-600 transition-colors">Forgot?</button>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400 group-focus-within:text-cyan-300 transition-colors">Password</label>
+                <button type="button" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-cyan-300 transition-colors">Forgot?</button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-purple-600 transition-colors" size={20} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-cyan-300 transition-colors" size={20} />
                 <input
                   type="password"
                   name="password"
                   required
                   placeholder="••••••••"
-                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 focus:ring-1 focus:ring-purple-500 focus:border-purple-500 transition-all outline-none text-slate-900 shadow-sm placeholder:text-slate-400"
+                  className="theme-input pl-12 shadow-inner placeholder:text-slate-500"
                   onChange={handleInputChange}
                 />
               </div>
@@ -147,7 +147,7 @@ const SignIn = () => {
               whileTap={{ scale: 0.98 }}
               disabled={loading}
               type="submit"
-              className={`w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center justify-center gap-3 group mt-8 shadow-md ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`theme-button-primary w-full py-4 uppercase tracking-widest flex items-center justify-center gap-3 group mt-8 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {loading ? 'Authenticating...' : 'Sign In'} <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </motion.button>
@@ -155,7 +155,7 @@ const SignIn = () => {
 
           <div className="mt-10 text-center">
             <p className="text-slate-500 font-medium text-xs tracking-widest uppercase">
-              New here? <Link to="/signup" className="text-blue-600 font-bold hover:text-blue-700 transition-colors ml-2 border-b border-blue-200 pb-1 hover:border-blue-400">Create Account</Link>
+              New here? <Link to="/signup" className="text-slate-800 font-bold hover:text-cyan-600 transition-colors ml-2 border-b border-slate-300 pb-1 hover:border-cyan-400">Create Account</Link>
             </p>
           </div>
         </motion.div>

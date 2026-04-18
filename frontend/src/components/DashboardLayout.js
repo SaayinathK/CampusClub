@@ -1,30 +1,114 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutGrid,
+  Users,
+  Building2,
+  CalendarDays,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Shield,
+  Menu,
+  Sparkles,
+  Award,
+  TrendingUp,
+  Zap,
+  Globe,
+  Clock,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import NotificationBell from './NotificationBell';
+import Navbar from './Navbar';
 
 // ─── Nav config per role ──────────────────────────────────────────────────────
 const NAV = {
   admin: [
-    { to: '/admin',               label: 'Dashboard',    icon: '▦' },
-    { to: '/admin/users',         label: 'Users',        icon: '👤' },
-    { to: '/admin/communities',   label: 'Communities',  icon: '🏛️' },
-    { to: '/admin/events',        label: 'Events',       icon: '📅' },
+    { to: '/admin', label: 'Dashboard', icon: LayoutGrid, desc: 'Overview & analytics', badge: null, color: 'from-blue-500 to-sky-500' },
+    { to: '/admin/users', label: 'Users', icon: Users, desc: 'Manage accounts', badge: null, color: 'from-blue-600 to-cyan-500' },
+    { to: '/admin/communities', label: 'Communities', icon: Building2, desc: 'Clubs & groups', badge: null, color: 'from-blue-700 to-indigo-500' },
+    { to: '/admin/events', label: 'Events', icon: CalendarDays, desc: 'Schedule & manage', badge: '12', color: 'from-sky-500 to-blue-500' },
   ],
   community_admin: [
-    { to: '/community-admin',              label: 'Dashboard',     icon: '▦' },
-    { to: '/community-admin/members',      label: 'Members',       icon: '👥' },
-    { to: '/community-admin/events',       label: 'Events',        icon: '📅' },
-    { to: '/community-admin/profile',      label: 'Profile',       icon: '⚙︎' },
+    { to: '/community-admin', label: 'Dashboard', icon: LayoutGrid, desc: 'Community stats', badge: null, color: 'from-blue-500 to-sky-500' },
+    { to: '/community-admin/members', label: 'Members', icon: Users, desc: 'Member management', badge: null, color: 'from-blue-600 to-cyan-500' },
+    { to: '/community-admin/events', label: 'Events', icon: CalendarDays, desc: 'Community events', badge: '5', color: 'from-sky-500 to-blue-500' },
   ],
 };
 
 const ROLE_LABEL = {
-  admin: 'System Admin',
-  community_admin: 'Community Admin',
+  admin: 'SYSTEM ADMINISTRATOR',
+  community_admin: 'COMMUNITY MANAGER',
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const ROLE_BADGE_COLOR = {
+  admin: 'from-blue-600 via-blue-500 to-cyan-600',
+  community_admin: 'from-cyan-500 via-blue-500 to-indigo-600',
+};
+
+// ─── Sidebar Nav Item Component ────────────────────────────────────────────────
+const SidebarNavItem = ({ item, isActive, collapsed, mobileOpen }) => {
+  const Icon = item.icon || LayoutGrid;
+  return (
+    <NavLink
+      to={item.to}
+      end={item.to === '/admin' || item.to === '/community-admin'}
+      className={`
+        group relative flex items-center gap-4 rounded-xl transition-all duration-300
+        ${collapsed && !mobileOpen ? 'justify-center py-3.5 px-0' : 'px-4 py-3'}
+        ${isActive
+          ? 'bg-gradient-to-r from-blue-500/15 via-sky-500/10 to-cyan-500/15 text-blue-700 shadow-sm'
+          : 'text-slate-500 hover:text-slate-700 hover:bg-white/50 hover:shadow-sm'
+        }
+      `}
+    >
+      <div className={`relative transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`}>
+        <Icon size={20} className={`shrink-0 transition-all duration-300 ${isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'}`} />
+        {isActive && (
+          <motion.div
+            layoutId="activeIndicator"
+            className="absolute -inset-1 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400 opacity-20 -z-10"
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          />
+        )}
+      </div>
+      
+      {(!collapsed || mobileOpen) && (
+        <div className="flex-1 flex items-center justify-between">
+          <div>
+            <span className={`text-[13px] font-semibold tracking-tight ${isActive ? 'text-blue-700' : 'text-slate-700'}`}>
+              {item.label}
+            </span>
+            <p className="text-[9px] text-slate-400 mt-0.5">{item.desc}</p>
+          </div>
+          {item.badge && (
+            <motion.span 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="px-2 py-0.5 text-[9px] font-bold bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full shadow-sm"
+            >
+              {item.badge}
+            </motion.span>
+          )}
+        </div>
+      )}
+
+      {/* Premium Tooltip */}
+      {collapsed && !mobileOpen && (
+        <div className="absolute left-full ml-3 px-3 py-2 bg-slate-800 text-white text-[11px] font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50 whitespace-nowrap shadow-xl backdrop-blur-lg bg-opacity-95">
+          <div className="flex flex-col">
+            <span>{item.label}</span>
+            <span className="text-[8px] text-slate-300 font-normal">{item.desc}</span>
+          </div>
+          <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-slate-800 rotate-45" />
+        </div>
+      )}
+    </NavLink>
+  );
+};
+
+// ─── Main Component ────────────────────────────────────────────────────────────
 export default function DashboardLayout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -33,174 +117,281 @@ export default function DashboardLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navItems = NAV[user?.role] || [];
+  const roleColor = ROLE_BADGE_COLOR[user?.role] || 'from-blue-600 to-cyan-600';
+
   const handleLogout = () => { logout(); navigate('/'); };
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
 
+  const sidebarVariants = {
+    expanded: { width: 300, transition: { type: 'spring', stiffness: 400, damping: 35 } },
+    collapsed: { width: 88, transition: { type: 'spring', stiffness: 400, damping: 35 } }
+  };
+
   return (
-    <div className="flex min-h-screen pt-[104px] bg-slate-50 font-sans">
-      
-      {/* Dynamic Background Effects (optional bleed over from pages) */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-1/4 left-[-120px] w-[520px] h-[520px] bg-blue-400/18 rounded-full mix-blend-multiply filter blur-[150px] animate-blob" />
-        <div className="absolute bottom-[-160px] right-[-120px] w-[620px] h-[620px] bg-indigo-400/14 rounded-full mix-blend-multiply filter blur-[160px] animate-blob animation-delay-2000" />
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100 font-sans text-slate-900 overflow-x-hidden">
+
+      {/* ── Premium Animated Background ── */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -right-40 w-[800px] h-[800px] bg-gradient-to-br from-blue-400/20 via-cyan-400/20 to-sky-400/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 -left-40 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-400/15 via-blue-400/15 to-indigo-400/15 rounded-full blur-3xl animate-pulse animation-delay-2000" />
+        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-gradient-to-r from-transparent via-blue-400/5 to-transparent rotate-45 blur-3xl" />
+        
+        {/* Animated particles */}
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
+            initial={{
+              x: Math.random() * window.innerWidth,
+              y: Math.random() * window.innerHeight,
+              opacity: 0.3
+            }}
+            animate={{
+              y: [null, -30, 30, -30],
+              x: [null, 20, -20, 20],
+              opacity: [0.3, 0.6, 0.3]
+            }}
+            transition={{
+              duration: 10 + Math.random() * 10,
+              repeat: Infinity,
+              repeatType: "reverse"
+            }}
+          />
+        ))}
       </div>
 
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] md:hidden"
-        />
-      )}
+      <Navbar />
 
-      {/* ── Sidebar ── */}
-      <aside 
-        className={`fixed top-[104px] left-0 bottom-0 z-[201] flex flex-col bg-white/85 backdrop-blur-2xl border-r border-slate-200 transition-all duration-300 ease-in-out shadow-sm ${collapsed ? 'w-20' : 'w-[264px]'} max-md:${mobileOpen ? 'translate-x-0 w-[264px]' : '-translate-x-full'}`}
-      >
-        {/* Brand */}
-        <div className={`px-4 pt-5 pb-4 border-b border-slate-200 ${collapsed && !mobileOpen ? 'flex justify-center' : ''}`}>
-          <div className={`flex items-center gap-3 ${collapsed && !mobileOpen ? 'justify-center' : ''}`}>
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg shadow-blue-500/15 border border-blue-600/20">
-              <span className="text-white font-black text-lg tracking-tight">C</span>
+      {/* Main Flex Container */}
+      <div className="flex pt-24">
+        {/* Mobile Backdrop */}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[200] md:hidden"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* ── Premium Sidebar ── */}
+        <motion.aside
+          initial={false}
+          animate={mobileOpen ? { x: 0, width: 300 } : (collapsed ? 'collapsed' : 'expanded')}
+          variants={sidebarVariants}
+          className={`fixed top-24 bottom-0 left-0 z-[40] flex flex-col bg-white/70 backdrop-blur-xl border-r border-white/40 shadow-2xl transition-transform duration-300 md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        >
+          {/* User Card Area */}
+          {(!collapsed || mobileOpen) && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-4 pt-4 pb-2 shrink-0"
+            >
+              <div className="relative rounded-2xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-md border border-white/50 p-4 shadow-lg">
+                <div className="absolute top-2 right-2">
+                  <Zap size={12} className="text-yellow-500" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl blur-md opacity-60" />
+                    <div className="relative h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                      <Shield size={20} className="text-white" />
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-bold text-slate-800 leading-tight capitalize">{user?.name?.split(' ')[0] || 'Administrator'}</div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <div className={`text-[7px] font-bold bg-gradient-to-r ${roleColor} bg-clip-text text-transparent uppercase tracking-wider`}>
+                        {ROLE_LABEL[user?.role] || 'SYSTEM ADMIN'}
+                      </div>
+                      <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Search Bar inside Sidebar */}
+          {(!collapsed || mobileOpen) && (
+            <div className="px-4 pt-1 pb-2 shrink-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                <input
+                  type="text"
+                  placeholder="Search menu..."
+                  className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl py-2.5 pl-9 pr-3 text-sm text-slate-600 focus:outline-none focus:border-blue-300 focus:bg-white/80 transition-all"
+                />
+              </div>
             </div>
+          )}
+
+          {/* Navigation Wrapper */}
+          <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4 custom-sidebar-scroll">
+            <div className={`px-2 text-[9px] font-bold text-transparent bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text uppercase tracking-[0.2em] ${collapsed && !mobileOpen ? 'text-center' : ''}`}>
+              {(!collapsed || mobileOpen) ? 'MAIN MENU' : '⚡'}
+            </div>
+
+            <nav className="space-y-1">
+              {navItems.map((item, idx) => {
+                const isDashboardRoot = item.to === '/admin' || item.to === '/community-admin';
+                const isActive = location.pathname === item.to || (!isDashboardRoot && location.pathname.startsWith(`${item.to}/`));
+                return (
+                  <motion.div
+                    key={item.to}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <SidebarNavItem
+                      item={item}
+                      isActive={isActive}
+                      collapsed={collapsed}
+                      mobileOpen={mobileOpen}
+                    />
+                  </motion.div>
+                );
+              })}
+            </nav>
+
+            {/* Quick Actions Section */}
             {(!collapsed || mobileOpen) && (
-              <div className="leading-tight min-w-0">
-                <div className="text-[11px] font-black uppercase tracking-[0.26em] text-blue-600">Campus Club</div>
-                <div className="text-xs text-slate-500 font-semibold truncate">{ROLE_LABEL[user?.role] || 'Dashboard'}</div>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="pt-4 mt-4 border-t border-white/30"
+              >
+                <div className="px-2 mb-3 text-[9px] font-bold text-transparent bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text uppercase tracking-[0.2em]">
+                  QUICK ACTIONS
+                </div>
+                <div className="space-y-1">
+                  {[
+                    { icon: Sparkles, label: 'Create Event', color: 'from-blue-500 to-sky-500', to: '/events/create' },
+                    { icon: Award, label: 'New Community', color: 'from-cyan-500 to-blue-500', to: '/communities/create' },
+                    { icon: TrendingUp, label: 'View Analytics', color: 'from-indigo-500 to-blue-500', to: '/analytics' },
+                    { icon: Globe, label: 'Explore Trends', color: 'from-sky-500 to-cyan-500', to: '/trends' }
+                  ].map((action, idx) => (
+                    <Link
+                      key={idx}
+                      to={action.to}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-600 hover:bg-white/50 transition-all group"
+                    >
+                      <div className={`p-1.5 rounded-lg bg-gradient-to-r ${action.color} bg-opacity-10 group-hover:scale-110 transition-transform`}>
+                        <action.icon size={14} className="text-white" />
+                      </div>
+                      <span className="text-xs font-medium">{action.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* System Status */}
+            {(!collapsed || mobileOpen) && (
+              <div className="pt-4 mt-4 border-t border-white/30">
+                <div className="flex items-center justify-between px-2 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      <div className="absolute inset-0 w-2 h-2 bg-emerald-500 rounded-full animate-ping opacity-75" />
+                    </div>
+                    <span className="text-[10px] font-semibold text-emerald-700">System Online</span>
+                  </div>
+                  <Clock size={12} className="text-emerald-600" />
+                </div>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Collapse toggle (Desktop only) */}
-        <button
-          onClick={() => setCollapsed(c => !c)}
-          className={`hidden md:flex items-center px-3 py-2.5 text-slate-500 hover:text-slate-900 transition-colors border-b border-slate-200 bg-slate-50/70 hover:bg-slate-100 ${collapsed ? 'justify-center' : 'justify-end'}`}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 hover:border-slate-300 transition-all text-[10px] font-black shadow-sm text-slate-600">
-             {collapsed ? '❯' : '❮'}
-          </div>
-        </button>
-
-        {/* Notification Bell — always visible */}
-        <div className={`px-4 py-3 border-b border-slate-200 flex ${collapsed && !mobileOpen ? 'justify-center' : 'justify-between'} items-center`}>
-          {(!collapsed || mobileOpen) && (
-            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Updates</div>
-          )}
-          <NotificationBell />
-        </div>
-
-        {/* Role badge */}
-        {(!collapsed || mobileOpen) && (
-          <>
-            <div className="px-4 py-4 relative">
-              <div className="text-[9px] font-black uppercase tracking-[0.28em] mb-2 flex items-center gap-2 text-blue-600">
-                <span className="w-1.5 h-1.5 rounded-full bg-current shadow-[0_0_8px_currentColor] animate-pulse" />
-                {ROLE_LABEL[user?.role] || 'User'}
-              </div>
-
-              <div className="text-slate-900 font-black text-lg truncate tracking-tight mb-1">
-                {user?.name}
-              </div>
-
-              {user?.role === 'community_admin' && user?.managedCommunity && (
-                <div className="text-xs text-slate-600 font-semibold truncate flex items-center gap-2 bg-slate-100 border border-slate-200 py-1 px-2.5 rounded-lg w-max mt-2">
-                  <span className="opacity-50">🏛️</span> {user.managedCommunity.name}
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Nav Items (Custom Scrollbar Hide) */}
-        <nav className="flex-1 py-5 overflow-y-auto overflow-x-hidden space-y-1.5 px-3.5 relative z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          {navItems.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/admin' || item.to === '/community-admin'}
-              className={({ isActive }) => `
-                group flex items-center gap-3.5 rounded-xl transition-all duration-300 relative
-                ${collapsed && !mobileOpen ? 'justify-center p-3.5 text-center' : 'justify-start px-4 py-3'}
-                ${isActive 
-                  ? 'bg-blue-50 text-blue-800 border border-blue-200 shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'}
+          {/* Footer Actions */}
+          <div className="px-3 py-4 border-t border-white/30 shrink-0">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleLogout}
+              className={`
+                group w-full flex items-center gap-3 rounded-xl py-3 transition-all duration-200 font-medium
+                ${collapsed && !mobileOpen ? 'justify-center px-0' : 'px-4'}
+                text-slate-500 hover:bg-gradient-to-r hover:from-rose-50 hover:to-orange-50 hover:text-rose-600
               `}
             >
-              {({ isActive }) => (
-                <>
-                  {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-1/2 w-1.5 bg-blue-600 rounded-r-full" />}
-                  <span className={`text-xl transition-transform duration-300 ${isActive ? 'scale-110' : 'opacity-80 group-hover:scale-110 group-hover:opacity-100 group-hover:-rotate-3'}`}>
-                    {item.icon}
-                  </span>
-                  {(!collapsed || mobileOpen) && (
-                    <span className={`font-black tracking-[0.18em] uppercase text-[11px] -mt-0.5 truncate ${isActive ? 'text-blue-800' : ''}`}>
-                      {item.label}
-                    </span>
-                  )}
-                  {(collapsed && !mobileOpen) && (
-                    <span className="absolute left-[calc(100%+12px)] bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white whitespace-nowrap z-[300] opacity-0 group-hover:opacity-100 pointer-events-none transition-all shadow-xl translate-x-1 group-hover:translate-x-0">
-                      {item.label}
-                    </span>
-                  )}
-                </>
+              <LogOut size={18} className={`shrink-0 transition-all duration-300 ${collapsed && !mobileOpen ? '' : 'group-hover:translate-x-1'}`} />
+              {(!collapsed || mobileOpen) && (
+                <span className="text-[13px] font-semibold tracking-tight">Sign Out</span>
               )}
-            </NavLink>
-          ))}
-        </nav>
 
-        {/* Secondary links */}
-        <div className={`px-3.5 pb-4 ${collapsed && !mobileOpen ? 'space-y-2' : 'space-y-2'} border-t border-slate-200 pt-4 bg-slate-50/50`}>
-          <a
-            href="mailto:support@campusclub.local"
-            className={`group flex items-center gap-3 rounded-xl border border-transparent hover:border-slate-200 hover:bg-white transition-all text-slate-600 hover:text-slate-900 ${collapsed && !mobileOpen ? 'justify-center p-3.5' : 'px-4 py-3'}`}
-            title="Contact support"
-          >
-            <span className="text-xl opacity-80 group-hover:opacity-100">✉️</span>
-            {(!collapsed || mobileOpen) && (
-              <span className="font-black uppercase tracking-[0.18em] text-[11px]">Support</span>
-            )}
-          </a>
-        </div>
+              {/* Tooltip for collapsed state */}
+              {collapsed && !mobileOpen && (
+                <div className="absolute left-full ml-3 px-3 py-2 bg-gradient-to-r from-rose-600 to-orange-600 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap shadow-xl">
+                  Sign Out
+                </div>
+              )}
+            </motion.button>
+          </div>
+        </motion.aside>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-slate-200 shrink-0 bg-slate-50">
-          <button
-            onClick={handleLogout}
-            className={`
-              w-full flex items-center gap-3.5 rounded-xl transition-all duration-300 relative text-rose-600 hover:text-white hover:bg-rose-600 hover:shadow-md border border-transparent hover:border-rose-600
-              ${collapsed && !mobileOpen ? 'justify-center p-3.5' : 'justify-start px-4 py-3'}
-            `}
-          >
-            <span className="text-xl transition-transform duration-300 group-hover:scale-110 opacity-80 group-hover:opacity-100">⏻</span>
-            {(!collapsed || mobileOpen) && <span className="font-black uppercase tracking-[0.22em] text-[11px] mt-0.5">Sign Out</span>}
-            {(collapsed && !mobileOpen) && (
-              <span className="absolute left-[calc(100%+12px)] bg-rose-950 border border-rose-500/30 rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-white whitespace-nowrap z-[300] opacity-0 group-hover:opacity-100 pointer-events-none transition-all shadow-xl translate-x-1 group-hover:translate-x-0">
-                Sign Out
-              </span>
-            )}
-          </button>
-        </div>
-      </aside>
-
-      {/* Mobile menu sticky button (floating) */}
-      <button 
-        onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg z-[190] hover:scale-110 active:scale-95 transition-all outline-none border-4 border-slate-50"
-      >
-        <span className="text-2xl leading-none -mt-0.5">☰</span>
-      </button>
-
-      {/* ── Main content wrap ── */}
-      <div className={`flex-1 min-w-0 transition-all duration-300 ease-in-out relative z-10 ${collapsed ? 'md:ml-20' : 'md:ml-[264px]'}`}>
-        {children}
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col min-w-0">
+          <div className={`flex-1 transition-all duration-300 ease-in-out ${collapsed ? 'md:ml-[88px]' : 'md:ml-[300px]'}`}>
+            <div className="p-4 md:p-6 lg:p-8 relative z-10">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 12, scale: 0.995 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.995 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </main>
       </div>
 
+      {/* Mobile Menu Trigger Button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setMobileOpen(true)}
+        className="md:hidden fixed bottom-6 right-6 z-[190] flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-600 text-white shadow-2xl shadow-blue-200 transition-all hover:shadow-xl"
+      >
+        <Menu size={22} />
+      </motion.button>
+
+      {/* Scrollbar Styling */}
+      <style>{`
+        .custom-sidebar-scroll::-webkit-scrollbar { width: 0px; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(241, 245, 249, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #3b82f6, #06b6d4); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #2563eb, #0891b2); }
+        .animation-delay-2000 { animation-delay: 2s; }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.05); }
+        }
+        .animate-pulse-slow { animation: pulse-slow 6s ease-in-out infinite; }
+        
+        /* Custom gradient text animations */
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% auto;
+          animation: gradientShift 3s ease infinite;
+        }
+      `}</style>
     </div>
   );
 }

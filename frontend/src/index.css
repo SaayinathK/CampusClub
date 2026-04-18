@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --theme-bg: #f8fafc;
+  --theme-bg-soft: #f1f5f9;
+  --theme-surface: rgba(255, 255, 255, 0.82);
+  --theme-surface-soft: rgba(248, 251, 255, 0.92);
+  --theme-border: #e2e8f0;
+  --theme-text: #0f172a;
+  --theme-text-muted: #64748b;
+  --theme-accent: #14b8a6;
+  --theme-primary: #1e3a8a;
+  --theme-accent-strong: #2563eb;
+  --theme-accent-2: #14b8a6;
+}
+
 @layer base {
   :root {
     --bg: #f8fafc;              /* slate-50 */
@@ -22,37 +36,85 @@
     --shadow-soft: 0 10px 30px rgba(2, 6, 23, 0.06);
   }
 
+  html {
+    background: var(--theme-bg);
+  }
+
   body {
     @apply antialiased font-sans;
     background: var(--bg);
     color: var(--text);
   }
+
+  #root {
+    min-height: 100vh;
+  }
 }
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600;
   }
 
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-slate-200;
+    @apply bg-white/85 backdrop-blur-xl border border-slate-200 shadow-[0_10px_28px_rgba(15,23,42,0.08)];
   }
 
   .glass-dark {
-    @apply bg-black/30 backdrop-blur-xl border border-white/10;
+    @apply bg-white/90 backdrop-blur-2xl border border-slate-200 shadow-[0_12px_34px_rgba(15,23,42,0.10)];
   }
 
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-600;
+  .surface-panel {
+    @apply bg-white/90 backdrop-blur-2xl border border-slate-200 shadow-[0_12px_34px_rgba(15,23,42,0.10)];
   }
 
-  .app-card {
-    @apply bg-white border border-slate-200 rounded-3xl shadow-sm;
+  .surface-card {
+    @apply bg-white border border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.08)];
   }
 
-  .app-card-hover {
-    @apply hover:shadow-md transition-shadow;
+  .theme-pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-teal-500/20 bg-teal-50 px-3 py-1 text-teal-700;
   }
+
+  .theme-button-primary {
+    @apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-900 to-blue-600 text-white font-black shadow-[0_10px_26px_rgba(37,99,235,0.28)] transition-all duration-200 ease-in-out hover:from-blue-950 hover:to-blue-700 hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .theme-button-secondary {
+    @apply inline-flex items-center justify-center rounded-xl bg-white text-slate-700 border border-slate-200 backdrop-blur-xl transition-all duration-200 ease-in-out hover:bg-slate-50 hover:border-blue-200 hover:text-slate-900;
+  }
+
+  .theme-input {
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 ease-in-out focus:border-blue-400 focus:ring-2 focus:ring-blue-200;
+  }
+
+  .dashboard-container {
+    @apply w-full max-w-[1360px] mx-auto px-4 md:px-6 lg:px-8;
+  }
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.18);
+  color: #0f172a;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.75);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(30, 58, 138, 0.65), rgba(37, 99, 235, 0.8));
+  border-radius: 999px;
+  border: 2px solid rgba(226, 232, 240, 0.75);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(30, 58, 138, 0.9), rgba(37, 99, 235, 1));
 }
 
 /* Custom animations */
@@ -74,8 +136,27 @@
   }
 }
 
+@keyframes background-pan {
+  0% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: scale(1.12) translate3d(-1.5%, -1.5%, 0);
+  }
+
+  100% {
+    transform: scale(1.05) translate3d(0, 0, 0);
+  }
+}
+
 .animate-blob {
   animation: blob 7s infinite;
+}
+
+.route-bg-pan {
+  transform-origin: center;
+  animation: background-pan 22s ease-in-out infinite;
 }
 
 .animation-delay-2000 {
@@ -84,4 +165,20 @@
 
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
+/* hide toast/popups from common libraries used in React projects */
+.Toastify__toast-container,
+.Toastify__toast,
+.react-hot-toast,
+.toastr,
+.notistack-snackbar,
+#notistack-snackbar,
+.MuiSnackbar-root,
+.snackbar,
+.toast,
+.toaster {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }

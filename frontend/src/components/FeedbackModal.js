@@ -44,24 +44,24 @@ const FeedbackModal = ({ isOpen, onClose, eventId, eventTitle }) => {
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative w-full max-w-2xl bg-white border border-slate-200 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                        className="relative w-full max-w-2xl glass-dark border border-slate-200 rounded-[2rem] overflow-hidden shadow-2xl"
                     >
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-900 to-blue-600" />
                         
                         {/* Header */}
-                        <div className="p-8 border-b border-slate-200 flex items-center justify-between bg-white/90 backdrop-blur-xl">
+                        <div className="p-8 border-b border-slate-200 flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 mb-1">
-                                    {eventTitle} <span className="text-blue-700">Feedbacks</span>
+                                    {eventTitle} <span className="text-blue-600">Feedbacks</span>
                                 </h2>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
-                                    <MessageSquare size={12} className="text-blue-600" />
+                                    <MessageSquare size={12} className="text-blue-500" />
                                     Community Impressions
                                 </p>
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-all active:scale-95 border border-slate-200"
+                                className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-all active:scale-95"
                             >
                                 <X size={24} />
                             </button>
@@ -76,7 +76,7 @@ const FeedbackModal = ({ isOpen, onClose, eventId, eventTitle }) => {
                                 </div>
                             ) : feedbacks.length === 0 ? (
                                 <div className="py-20 text-center">
-                                    <MessageSquare size={48} className="text-slate-300 mx-auto mb-4" />
+                                    <MessageSquare size={48} className="text-slate-400 mx-auto mb-4" />
                                     <p className="text-slate-500 uppercase text-xs font-black italic">No feedbacks shared for this event yet.</p>
                                 </div>
                             ) : (
@@ -87,12 +87,12 @@ const FeedbackModal = ({ isOpen, onClose, eventId, eventTitle }) => {
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.1 }}
                                             key={i}
-                                            className="p-6 rounded-2xl bg-white border border-slate-200 relative overflow-hidden group shadow-sm hover:shadow-md transition-shadow"
+                                            className="p-6 rounded-2xl surface-card border border-slate-200 relative overflow-hidden group"
                                         >
                                             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity" />
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center border border-blue-100 text-blue-700">
+                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-teal-500/20 flex items-center justify-center border border-slate-200">
                                                         <span className="text-[10px] font-black">{f.username?.[0] || 'A'}</span>
                                                     </div>
                                                     <div>
@@ -102,15 +102,15 @@ const FeedbackModal = ({ isOpen, onClose, eventId, eventTitle }) => {
                                                 </div>
                                                 <div className="flex text-yellow-500 gap-0.5">
                                                     {[...Array(5)].map((_, j) => (
-                                                        <Star key={j} size={10} className={j < f.rating ? 'fill-current' : 'text-slate-200'} />
+                                                        <Star key={j} size={10} className={j < f.rating ? 'fill-current' : 'text-slate-300'} />
                                                     ))}
                                                 </div>
                                             </div>
-                                            <p className="text-xs text-slate-700 leading-loose font-semibold pl-3 border-l border-slate-200 ml-4">
+                                            <p className="text-xs text-slate-600 uppercase leading-loose font-bold pl-2 border-l border-slate-200 ml-4">
                                                 {f.comment}
                                             </p>
                                             <div className="mt-4 flex justify-end">
-                                                <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest italic">
+                                                <span className="text-[8px] text-slate-500 font-black uppercase tracking-widest italic">
                                                     {new Date(f.createdAt).toLocaleDateString()}
                                                 </span>
                                             </div>
@@ -121,10 +121,10 @@ const FeedbackModal = ({ isOpen, onClose, eventId, eventTitle }) => {
                         </div>
 
                         {/* Footer */}
-                        <div className="p-6 border-t border-slate-200 text-center bg-slate-50">
+                        <div className="p-6 border-t border-slate-200 text-center">
                             <button
                                 onClick={onClose}
-                                className="px-8 py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 border border-slate-200"
+                                className="px-8 py-3 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95"
                             >
                                 Close View
                             </button>

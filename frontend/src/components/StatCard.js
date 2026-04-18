@@ -8,14 +8,14 @@ import React from 'react';
 export default function StatCard({ label, value, color, icon, trend, onClick }) {
   return (
     <div
-      className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+      className="surface-card stat-card"
       onClick={onClick}
       style={{ cursor: onClick ? 'pointer' : 'default' }}
     >
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-3xl font-black mb-1" style={{ color: color || '#3b82f6' }}>{value}</div>
-          <div className="text-xs font-black uppercase tracking-widest text-slate-500">{label}</div>
+          <div className="stat-value" style={{ color: color || 'var(--purple-light)' }}>{value}</div>
+          <div className="stat-label" style={{ color: 'var(--theme-text-muted)' }}>{label}</div>
         </div>
         {icon && (
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" style={{
@@ -28,7 +28,7 @@ export default function StatCard({ label, value, color, icon, trend, onClick }) 
         )}
       </div>
       {trend !== undefined && (
-        <div className={`mt-4 text-[10px] font-bold uppercase tracking-wider ${trend >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+        <div style={{ marginTop: 10, fontSize: '0.72rem', color: trend >= 0 ? '#34d399' : '#fb7185' }}>
           {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% from last month
         </div>
       )}

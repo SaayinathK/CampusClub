@@ -2,16 +2,28 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, Camera, CreditCard, FileText, Upload, Download,
-  Trash2, Plus, CheckCircle2, Shield, Calendar, CreditCard as CardIcon, LogOut, Mail
+  User,
+  Camera,
+  CreditCard,
+  FileText,
+  Upload,
+  Download,
+  Trash2,
+  Plus,
+  CheckCircle2,
+  Shield,
+  Calendar,
+  CreditCard as CardIcon,
+  LogOut,
+  Mail,
 } from 'lucide-react';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [profilePhoto, setProfilePhoto] = useState(null);
-  const [userData, setUserData] = useState({ username: 'USER', email: 'user@example.com' }); // Default dummy will be overridden
+  const [userData, setUserData] = useState({ username: 'USER', email: 'user@example.com', role: 'student' });
   const [cards, setCards] = useState([
-    { id: 1, type: 'Visa', last4: '4242', expiry: '12/26', name: 'SASIKA SHEHAN' }
+    { id: 1, type: 'Visa', last4: '4242', expiry: '12/26', name: 'SASIKA SHEHAN' },
   ]);
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState({
@@ -19,7 +31,7 @@ const Profile = () => {
     name: '',
     expiry: '',
     cvv: '',
-    provider: 'visa'
+    provider: 'visa',
   });
   const [receipts, setReceipts] = useState([]);
 
@@ -31,27 +43,21 @@ const Profile = () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('http://localhost:5001/api/receipts', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.ok) {
-        setReceipts(data);
-      }
+      if (res.ok) setReceipts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching receipts:', err);
     }
   };
 
   useEffect(() => {
-    // Load user data from localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUserData(JSON.parse(storedUser));
       fetchReceipts();
     } else {
-      // If not logged in, redirect to signin
       navigate('/signin');
     }
   }, [navigate]);
@@ -63,63 +69,55 @@ const Profile = () => {
   };
 
   const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setProfilePhoto(reader.result);
-      reader.readAsDataURL(file);
-    }
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setProfilePhoto(reader.result);
+    reader.readAsDataURL(file);
   };
 
   const handleReceiptUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
       const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('receipt', file);
 
-      try {
-        const res = await fetch('http://localhost:5001/api/receipts/upload', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
+      const res = await fetch('http://localhost:5001/api/receipts/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
-        const data = await res.json();
-        if (res.ok) {
-          setReceipts([data, ...receipts]);
-        } else {
-          alert(data.message || 'Upload failed');
-        }
-      } catch (err) {
-        console.error('Upload Error:', err);
-        alert('Could not connect to the server for upload.');
+      const data = await res.json();
+      if (res.ok) {
+        setReceipts((prev) => [data, ...prev]);
+      } else {
+        alert(data.message || 'Upload failed');
       }
+    } catch (err) {
+      console.error('Upload Error:', err);
+      alert('Could not connect to the server for upload.');
     }
   };
 
   const handleDownloadReceipt = (receipt) => {
-    if (receipt.fileUrl) {
-      const fullUrl = `http://localhost:5001${receipt.fileUrl}`;
-      window.open(fullUrl, '_blank');
-    }
+    if (!receipt?.fileUrl) return;
+    window.open(`http://localhost:5001${receipt.fileUrl}`, '_blank');
   };
 
   const deleteReceipt = async (id) => {
     if (!window.confirm('Are you sure you want to delete this document?')) return;
-    
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5001/api/receipts/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        setReceipts(receipts.filter(r => r._id !== id));
+        setReceipts((prev) => prev.filter((r) => r._id !== id));
       }
     } catch (err) {
       console.error('Delete Error:', err);
@@ -128,15 +126,14 @@ const Profile = () => {
 
   const handleAddCard = (e) => {
     e.preventDefault();
-    const last4 = newCard.number.slice(-4);
     const card = {
       id: Date.now(),
       type: newCard.provider === 'mastercard' ? 'MasterCard' : newCard.provider === 'amex' ? 'AMEX' : 'Visa',
-      last4: last4 || '0000',
+      last4: newCard.number.replace(/\s/g, '').slice(-4) || '0000',
       expiry: newCard.expiry,
-      name: newCard.name.toUpperCase()
+      name: newCard.name.toUpperCase(),
     };
-    setCards([...cards, card]);
+    setCards((prev) => [...prev, card]);
     setShowAddCard(false);
     setNewCard({ number: '', name: '', expiry: '', cvv: '', provider: 'visa' });
   };
@@ -144,16 +141,22 @@ const Profile = () => {
   const handleCardInputChange = (e) => {
     const { name, value } = e.target;
     let formattedValue = value;
+
     if (name === 'number') {
       formattedValue = value.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim().slice(0, 19);
     } else if (name === 'expiry') {
-      formattedValue = value.replace(/\//g, '').replace(/(\d{2})/g, '$1/').trim().slice(0, 5);
-      if (formattedValue.endsWith('/')) formattedValue = formattedValue.slice(0, -1);
+      formattedValue = value.replace(/\D/g, '').slice(0, 4);
+      if (formattedValue.length >= 3) {
+        formattedValue = `${formattedValue.slice(0, 2)}/${formattedValue.slice(2)}`;
+      }
+    } else if (name === 'cvv') {
+      formattedValue = value.replace(/\D/g, '').slice(0, 3);
     }
-    setNewCard({ ...newCard, [name]: formattedValue });
+
+    setNewCard((prev) => ({ ...prev, [name]: formattedValue }));
   };
 
-  const deleteCard = (id) => setCards(cards.filter(c => c.id !== id));
+  const deleteCard = (id) => setCards((prev) => prev.filter((c) => c.id !== id));
 
   const tabs = [
     { id: 'profile', label: 'My Profile', icon: User },
@@ -163,20 +166,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-slate-50 text-slate-900 px-4 md:px-8 relative overflow-hidden">
-      {/* Background Glows */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-50 z-0">
-        <motion.div
-          animate={{ x: [0, 30, 0], y: [0, -30, 0], scale: [1, 1.05, 1] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-blue-300/30 rounded-full blur-[150px]"
-        />
-        <motion.div
-          animate={{ x: [0, -30, 0], y: [0, 30, 0], scale: [1, 1.05, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-purple-300/30 rounded-full blur-[150px]"
-        />
-      </div>
-
       <AnimatePresence>
         {showAddCard && (
           <motion.div
@@ -189,120 +178,19 @@ const Profile = () => {
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="bg-white border border-slate-200 p-8 rounded-[2.5rem] w-full max-w-xl shadow-xl relative overflow-hidden"
+              className="bg-white border border-slate-200 p-8 rounded-3xl w-full max-w-xl shadow-xl"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500" />
-              <h2 className="text-3xl font-black uppercase tracking-tighter italic mb-8 text-slate-900">Add <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Security</span></h2>
-
-              <div className="mb-8 overflow-x-auto pb-4 scrollbar-hide">
-                <div className="flex gap-4 min-w-max">
-                  {[
-                    { id: 'paypal', color: 'from-[#003087] to-[#009cde]', label: 'PayPal' },
-                    { id: 'visa', color: 'from-[#1434CB] to-[#00579f]', label: 'VISA' },
-                    { id: 'mastercard', color: 'from-[#eb001b] to-[#ff5f00]', label: 'MasterCard', isMC: true },
-                    { id: 'amex', color: 'from-[#0070cd] to-[#0093e0]', label: 'AMEX' }
-                  ].map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => setNewCard({ ...newCard, provider: p.id })}
-                        className={`h-16 w-28 rounded-2xl flex items-center justify-center transition-all bg-gradient-to-br ${newCard.provider === p.id
-                        ? `${p.color} ring-2 ring-offset-2 ring-offset-white ring-blue-500 scale-105 shadow-md`
-                        : 'from-slate-100 to-slate-200 opacity-70 grayscale hover:grayscale-0 hover:opacity-100'
-                        }`}
-                    >
-                      {p.isMC && newCard.provider !== p.id ? (
-                        <div className="flex -space-x-3">
-                          <div className="w-6 h-6 rounded-full bg-slate-400/40" />
-                          <div className="w-6 h-6 rounded-full bg-slate-400/60" />
-                        </div>
-                      ) : (
-                        <span className={`text-xs font-black uppercase tracking-widest ${newCard.provider === p.id ? 'text-white' : 'text-slate-600'}`}>{p.label}</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className={`mb-10 p-8 rounded-3xl shadow-2xl relative overflow-hidden transition-all duration-500 bg-gradient-to-br ${newCard.provider === 'paypal' ? 'from-[#003087] to-[#009cde]' :
-                newCard.provider === 'mastercard' ? 'from-zinc-800 to-zinc-900 border border-white/10' :
-                  newCard.provider === 'amex' ? 'from-[#0070cd] to-[#0093e0]' : 'from-blue-700 to-indigo-900'
-                }`}>
-                <div className="absolute top-[-50%] right-[-20%] w-60 h-60 bg-white/10 rounded-full blur-[40px] pointer-events-none" />
-                <div className="flex justify-between items-start mb-10 relative z-10">
-                  <div className="w-14 h-10 bg-yellow-400/90 rounded-xl shadow-inner backdrop-blur-sm" />
-                  <div className="h-8 flex items-center">
-                    {newCard.provider === 'mastercard' ? (
-                      <div className="flex -space-x-3">
-                        <div className="w-7 h-7 rounded-full bg-[#eb001b]" />
-                        <div className="w-7 h-7 rounded-full bg-[#ff5f00] opacity-90" />
-                      </div>
-                    ) : (
-                      <span className="font-black italic text-white/50 uppercase tracking-widest text-lg drop-shadow-md">
-                        {newCard.provider}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-6 relative z-10">
-                  <p className="text-2xl font-mono tracking-[0.2em] leading-none drop-shadow-md">
-                    {newCard.provider === 'paypal' ? 'PAYPAL REF LINKED' : (newCard.number || '•••• •••• •••• ••••')}
-                  </p>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-1">Card Holder</p>
-                      <p className="font-black tracking-widest leading-none uppercase drop-shadow-md">{newCard.name || 'YOUR NAME'}</p>
-                    </div>
-                    {newCard.provider !== 'paypal' && (
-                      <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-1">Expires</p>
-                        <p className="font-black tracking-widest leading-none drop-shadow-md">{newCard.expiry || 'MM/YY'}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
+              <h2 className="text-2xl font-black uppercase tracking-tight mb-6">Add Payment Method</h2>
               <form onSubmit={handleAddCard} className="space-y-4">
-                <input
-                  type="text"
-                  name="number"
-                  value={newCard.number}
-                  onChange={handleCardInputChange}
-                  placeholder="Card Number"
-                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
-                  required
-                />
-                <input
-                  type="text"
-                  name="name"
-                  value={newCard.name}
-                  onChange={handleCardInputChange}
-                  placeholder="Card Holder Name"
-                  className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
-                  required
-                />
+                <input type="text" name="number" value={newCard.number} onChange={handleCardInputChange} placeholder="Card Number" className="theme-input" required />
+                <input type="text" name="name" value={newCard.name} onChange={handleCardInputChange} placeholder="Card Holder Name" className="theme-input" required />
                 <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    name="expiry"
-                    value={newCard.expiry}
-                    onChange={handleCardInputChange}
-                    placeholder="MM/YY"
-                    className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
-                    required
-                  />
-                  <input
-                    type="password"
-                    name="cvv"
-                    maxLength="3"
-                    className="w-full bg-white border border-slate-200 rounded-2xl py-4 px-4 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-sm text-slate-900 placeholder:text-slate-400"
-                    placeholder="CVV"
-                    required
-                  />
+                  <input type="text" name="expiry" value={newCard.expiry} onChange={handleCardInputChange} placeholder="MM/YY" className="theme-input" required />
+                  <input type="password" name="cvv" value={newCard.cvv} onChange={handleCardInputChange} placeholder="CVV" className="theme-input" required />
                 </div>
-                <div className="flex gap-4 mt-8 pt-4 border-t border-slate-100">
-                  <button type="button" onClick={() => setShowAddCard(false)} className="flex-1 font-bold uppercase tracking-widest text-xs py-4 text-slate-500 hover:text-slate-900 transition-colors">Cancel</button>
-                  <button type="submit" className="flex-[2] bg-blue-600 text-white hover:bg-blue-700 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-md transition-all active:scale-95">Verify & Add</button>
+                <div className="flex gap-3 pt-3">
+                  <button type="button" onClick={() => setShowAddCard(false)} className="flex-1 theme-button-secondary py-3 font-black uppercase text-xs tracking-widest">Cancel</button>
+                  <button type="submit" className="flex-1 theme-button-primary py-3 font-black uppercase text-xs tracking-widest">Add Card</button>
                 </div>
               </form>
             </motion.div>
@@ -311,34 +199,28 @@ const Profile = () => {
       </AnimatePresence>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <header className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <motion.h1
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-5xl md:text-6xl font-black uppercase tracking-tighter mb-2"
-            >
-              My <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500 drop-shadow-lg">Dashboard</span>
-            </motion.h1>
+            <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter mb-2">My Dashboard</h1>
             <p className="text-slate-500 uppercase tracking-[0.2em] text-xs font-bold">Manage your identity and assets</p>
           </div>
-          <button onClick={handleLogout} className="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold uppercase tracking-widest text-xs transition-colors border border-red-200">
+          <button onClick={handleLogout} className="flex items-center gap-2 px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold uppercase tracking-widest text-xs border border-red-200">
             <LogOut size={16} /> Log Out
           </button>
         </header>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Tabs */}
           <aside className="lg:w-1/4">
             <div className="flex flex-col gap-3">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-4 px-6 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-md border border-transparent'
-                    : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 shadow-sm'
-                    }`}
+                  className={`flex items-center gap-4 px-6 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-blue-600 text-white shadow-md border border-transparent'
+                      : 'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900 shadow-sm'
+                  }`}
                 >
                   <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'text-slate-500'} />
                   {tab.label}
@@ -347,225 +229,128 @@ const Profile = () => {
             </div>
           </aside>
 
-          {/* Main Content Area */}
-          <main className="lg:w-3/4 bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-lg min-h-[600px] relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/50 via-purple-500/50 to-pink-500/50" />
-
+          <main className="lg:w-3/4 bg-white border border-slate-200 rounded-[2.5rem] p-8 md:p-12 shadow-lg min-h-[560px]">
             <AnimatePresence mode="wait">
               {activeTab === 'profile' && (
-                <motion.div
-                  key="profile"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-12"
-                >
-                  <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
+                <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-10">
+                  <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                     <div className="relative group">
-                      <div className="w-48 h-48 rounded-full overflow-hidden border-[6px] border-white bg-slate-100 flex items-center justify-center shadow-md">
-                        {profilePhoto ? (
-                          <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                        ) : (
-                          <User size={80} className="text-blue-500/50" />
-                        )}
+                      <div className="w-44 h-44 rounded-full overflow-hidden border-[6px] border-white bg-slate-100 flex items-center justify-center shadow-md">
+                        {profilePhoto ? <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" /> : <User size={74} className="text-blue-500/50" />}
                       </div>
-                      <button
-                        onClick={() => fileInputRef.current.click()}
-                        className="absolute bottom-2 right-2 p-4 bg-white text-black rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-110 transition-transform"
-                      >
-                        <Camera size={24} />
+                      <button onClick={() => fileInputRef.current?.click()} className="absolute bottom-2 right-2 p-3 bg-white text-black rounded-full border border-slate-200 shadow-sm">
+                        <Camera size={20} />
                       </button>
-                      <input
-                        type="file"
-                        hidden
-                        ref={fileInputRef}
-                        onChange={handlePhotoChange}
-                        accept="image/*"
-                      />
+                      <input type="file" hidden ref={fileInputRef} onChange={handlePhotoChange} accept="image/*" />
                     </div>
-                    <div className="text-center md:text-left mt-4">
-                      <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4">
-                        <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">{userData.username}</h2>
-                        <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border shadow-lg ${
-                          userData.role === 'sliit' ? 'bg-blue-600/20 text-blue-400 border-blue-500/30' :
-                          userData.role === 'admin' ? 'bg-red-600/20 text-red-500 border-red-500/30' :
-                          userData.role === 'community' ? 'bg-purple-600/20 text-purple-400 border-purple-500/30' :
-                          'bg-emerald-600/20 text-emerald-400 border-emerald-500/30'
-                        }`}>
-                          {userData.role === 'sliit' ? 'SLIIT Student' : 
-                           userData.role === 'community' ? 'Community Admin' : 
-                           userData.role === 'admin' ? 'System Admin' : 'External Participant'}
-                        </span>
-                      </div>
-                      <p className="text-slate-500 font-bold tracking-widest uppercase text-sm mb-8 flex items-center justify-center md:justify-start gap-2">
-                        <Mail size={16} className="text-blue-500" /> {userData.email}
+
+                    <div className="text-center md:text-left">
+                      <h2 className="text-4xl font-black uppercase tracking-tight mb-3">{userData.username}</h2>
+                      <p className="text-slate-500 font-bold tracking-widest uppercase text-xs mb-6 flex items-center justify-center md:justify-start gap-2">
+                        <Mail size={14} className="text-blue-500" /> {userData.email}
                       </p>
-                      <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                        <button className="px-8 py-3.5 bg-blue-600 text-white hover:bg-blue-700 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95">Edit Identity</button>
-                        <button className="px-8 py-3.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm text-slate-900">Account Settings</button>
+                      <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                        <button className="px-6 py-3 theme-button-primary rounded-xl text-[10px] font-black uppercase tracking-widest">Edit Identity</button>
+                        <button className="px-6 py-3 theme-button-secondary rounded-xl text-[10px] font-black uppercase tracking-widest">Account Settings</button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200 space-y-4 hover:bg-white transition-colors shadow-sm">
-                      <div className="flex items-center gap-3 text-blue-700 mb-4">
-                        <Shield size={24} />
-                        <h3 className="font-black uppercase tracking-widest text-sm">Security Level</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-center gap-3 text-blue-700 mb-3">
+                        <Shield size={20} />
+                        <h3 className="font-black uppercase tracking-widest text-xs">Security Level</h3>
                       </div>
-                      <p className="text-slate-600 text-sm leading-relaxed mb-4 font-medium">Account secured with verified email token and encoded credentials.</p>
-                      <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: "100%" }}
-                          transition={{ duration: 1, delay: 0.5 }}
-                          className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
-                        />
-                      </div>
+                      <p className="text-slate-600 text-sm">Account secured with verified email token and encoded credentials.</p>
                     </div>
-                    <div className="p-8 rounded-3xl bg-slate-50 border border-slate-200 space-y-4 hover:bg-white transition-colors shadow-sm">
-                      <div className="flex items-center gap-3 text-indigo-700 mb-4">
-                        <Calendar size={24} />
-                        <h3 className="font-black uppercase tracking-widest text-sm">Account Status</h3>
+                    <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-center gap-3 text-indigo-700 mb-3">
+                        <Calendar size={20} />
+                        <h3 className="font-black uppercase tracking-widest text-xs">Account Status</h3>
                       </div>
-                      <p className="text-slate-600 text-sm leading-relaxed mb-4 font-medium">Successfully authenticated. You have full access to dashboard features.</p>
-                      <div className="inline-block px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black uppercase tracking-widest rounded-lg">
-                        Active Passport
-                      </div>
+                      <p className="text-slate-600 text-sm">Successfully authenticated. You have full access to dashboard features.</p>
                     </div>
                   </div>
                 </motion.div>
               )}
 
               {activeTab === 'payment' && (
-                <motion.div
-                  key="payment"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-8"
-                >
-                  <div className="flex justify-between items-center mb-8 pb-6 border-b border-slate-200">
-                    <h2 className="text-2xl font-black uppercase tracking-tighter">Your Cards</h2>
-                    <button
-                      onClick={() => setShowAddCard(true)}
-                      className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md"
-                    >
+                <motion.div key="payment" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
+                  <div className="flex justify-between items-center pb-6 border-b border-slate-200">
+                    <h2 className="text-2xl font-black uppercase tracking-tight">Your Cards</h2>
+                    <button onClick={() => setShowAddCard(true)} className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md">
                       <Plus size={16} /> Add Card
                     </button>
                   </div>
 
-                  {cards.length === 0 ? (
-                    <div className="text-center py-20 border border-dashed border-slate-300 rounded-3xl bg-slate-50">
-                      <CreditCard size={48} className="mx-auto text-slate-400 mb-4" />
-                      <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">No payment methods added</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {cards.map((card) => (
-                        <div key={card.id} className="p-8 rounded-[2rem] bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all">
-                          <div className="absolute top-[-50%] right-[-20%] w-64 h-64 bg-white/5 rounded-full blur-[50px] group-hover:bg-white/10 transition-colors duration-700 pointer-events-none" />
-                          <CardIcon className="mb-8 opacity-40 text-white" size={36} />
-                          <div className="space-y-8 relative z-10">
-                            <p className="text-xl md:text-2xl font-mono tracking-[0.2em] text-white/90">•••• •••• •••• {card.last4}</p>
-                            <div className="flex justify-between items-end">
-                              <div>
-                                <p className="text-[10px] uppercase font-bold tracking-widest opacity-50 mb-1 text-white">Expires</p>
-                                <p className="font-black tracking-widest text-white">{card.expiry}</p>
-                              </div>
-                              <button
-                                onClick={() => deleteCard(card.id)}
-                                className="p-3 bg-white text-slate-500 hover:text-red-500 rounded-xl transition-all border border-slate-200 hover:border-red-200 shadow-sm"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {cards.map((card) => (
+                      <div key={card.id} className="p-7 rounded-[2rem] bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/10 shadow-2xl">
+                        <CardIcon className="mb-7 opacity-40 text-white" size={34} />
+                        <p className="text-xl font-mono tracking-[0.2em] text-white/90 mb-5">���� ���� ���� {card.last4}</p>
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-1 text-white">Expires</p>
+                            <p className="font-black tracking-widest text-white">{card.expiry}</p>
                           </div>
+                          <button onClick={() => deleteCard(card.id)} className="p-3 bg-white text-slate-600 hover:text-red-500 rounded-xl border border-slate-200">
+                            <Trash2 size={18} />
+                          </button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="mt-12 p-6 rounded-2xl bg-blue-50 border border-blue-100 flex items-start gap-4">
-                    <Shield className="text-blue-500 shrink-0" size={24} />
-                    <div>
-                      <h3 className="text-sm font-black uppercase tracking-widest text-blue-600 mb-2">Maximum Security</h3>
-                      <p className="text-xs text-slate-600 leading-relaxed font-medium">All payment details are encrypted using banking-grade security protocols. We never store your full card numbers directly on our servers.</p>
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
               )}
 
               {activeTab === 'receipts' && (
-                <motion.div
-                  key="receipts"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="space-y-10"
-                >
-                  <div
-                    className="w-full border-2 border-dashed border-slate-300 rounded-[2.5rem] p-12 flex flex-col items-center justify-center gap-4 hover:border-blue-400 hover:bg-slate-50 transition-all group cursor-pointer"
-                    onClick={() => receiptInputRef.current.click()}
-                  >
-                    <div className="p-5 bg-white text-blue-500 rounded-2xl group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm border border-slate-200">
-                      <Upload size={32} />
+                <motion.div key="receipts" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
+                  <div className="w-full border-2 border-dashed border-slate-300 rounded-3xl p-10 flex flex-col items-center justify-center gap-4 hover:border-blue-400 hover:bg-slate-50 transition-all group cursor-pointer" onClick={() => receiptInputRef.current?.click()}>
+                    <div className="p-4 bg-white text-blue-500 rounded-2xl border border-slate-200">
+                      <Upload size={28} />
                     </div>
-                    <div className="text-center mt-2">
-                      <p className="font-black uppercase tracking-widest text-sm mb-2 text-slate-900">Upload New Document</p>
-                      <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Drop PDF or Images here (Max 5MB)</p>
+                    <div className="text-center">
+                      <p className="font-black uppercase tracking-widest text-xs mb-1 text-slate-900">Upload New Document</p>
+                      <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Drop PDF or Images here</p>
                     </div>
-                    <input
-                      type="file"
-                      hidden
-                      ref={receiptInputRef}
-                      onChange={handleReceiptUpload}
-                      accept=".pdf,image/*"
-                    />
+                    <input type="file" hidden ref={receiptInputRef} onChange={handleReceiptUpload} accept=".pdf,image/*" />
                   </div>
 
                   <div>
-                    <h2 className="text-xl font-black uppercase tracking-tighter mb-6 flex items-center gap-3 text-slate-900">
+                    <h2 className="text-xl font-black uppercase tracking-tight mb-5 flex items-center gap-3 text-slate-900">
                       <FileText className="text-slate-400" /> Document Log
                     </h2>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {receipts.map((receipt) => (
-                        <div key={receipt._id} className="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center justify-between group hover:border-blue-300 transition-all">
-                          <div className="flex items-center gap-5">
-                            <div className={`p-4 rounded-xl shadow-sm border ${receipt.status === 'Verified' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
-                              {receipt.status === 'Verified' ? <CheckCircle2 size={24} /> : <FileText size={24} />}
+                        <div key={receipt._id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-xl border ${receipt.status === 'Verified' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                              {receipt.status === 'Verified' ? <CheckCircle2 size={20} /> : <FileText size={20} />}
                             </div>
                             <div>
                               <p className="font-bold text-sm text-slate-900 mb-1">{receipt.originalName}</p>
                               <p className="text-[10px] uppercase font-black text-slate-500 tracking-widest">
-                                {new Date(receipt.uploadDate).toLocaleDateString()} • <span className={receipt.status === 'Verified' ? 'text-green-600' : 'text-blue-600'}>{receipt.status}</span>
+                                {new Date(receipt.uploadDate).toLocaleDateString()} � {receipt.status}
                               </p>
                             </div>
                           </div>
                           <div className="flex gap-2">
-                             <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDownloadReceipt(receipt);
-                                }}
-                                className="p-4 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-2xl transition-all active:scale-95 shadow-sm"
-                                title="Download Document"
-                              >
-                                <Download size={20} />
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteReceipt(receipt._id);
-                                }}
-                                className="p-4 bg-slate-50 border border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500 rounded-2xl transition-all active:scale-95 shadow-sm"
-                                title="Delete Document"
-                              >
-                                <Trash2 size={20} />
-                              </button>
+                            <button onClick={() => handleDownloadReceipt(receipt)} className="p-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 rounded-xl">
+                              <Download size={18} />
+                            </button>
+                            <button onClick={() => deleteReceipt(receipt._id)} className="p-3 bg-slate-50 border border-slate-200 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500 rounded-xl">
+                              <Trash2 size={18} />
+                            </button>
                           </div>
                         </div>
                       ))}
+
+                      {receipts.length === 0 && (
+                        <div className="text-center py-10 border border-dashed border-slate-300 rounded-2xl bg-slate-50">
+                          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">No receipts uploaded yet</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

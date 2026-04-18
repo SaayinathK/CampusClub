@@ -18,7 +18,7 @@ function EventCard({ event, badge, badgeColor }) {
   return (
     <Link
       to={`/events/${event._id}`}
-      className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all duration-300 hover:-translate-y-0.5 shadow-sm"
+      className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-cyan-300/30 hover:bg-slate-50 transition-all duration-300 hover:-translate-y-0.5"
     >
       {/* Category icon */}
       <div
@@ -50,7 +50,7 @@ function EventCard({ event, badge, badgeColor }) {
             </span>
           )}
         </div>
-        <h4 className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors truncate">
+        <h4 className="font-bold text-sm text-slate-900 group-hover:text-cyan-600 transition-colors truncate">
           {event.title}
         </h4>
         <div className="flex flex-wrap gap-3 mt-1 text-[10px] text-slate-500 font-medium">
@@ -65,7 +65,7 @@ function EventCard({ event, badge, badgeColor }) {
         </div>
       </div>
 
-      <span className="text-slate-400 group-hover:text-slate-700 text-lg shrink-0 transition-colors">›</span>
+      <span className="text-slate-500 group-hover:text-slate-700 text-lg shrink-0 transition-colors">›</span>
     </Link>
   );
 }
@@ -129,8 +129,8 @@ export default function CommunityFeed() {
   const active = tabs.find(t => t.key === activeTab);
 
   return (
-    <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 flex flex-col relative overflow-hidden shadow-md">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full mix-blend-multiply filter blur-[90px] pointer-events-none" />
+    <div className="glass-dark rounded-3xl p-6 md:p-8 border border-slate-200 flex flex-col relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full mix-blend-screen filter blur-[80px] pointer-events-none" />
 
       <div className="flex justify-between items-end mb-6 relative z-10">
         <div>
@@ -142,27 +142,29 @@ export default function CommunityFeed() {
             {loading ? 'Loading...' : total === 0 ? 'Join communities to see their events here' : `Activity from your communities`}
           </p>
         </div>
-        <Link to="/events" className="text-sm font-bold text-blue-700 bg-blue-50 border border-blue-100 px-4 py-2 rounded-full hover:bg-blue-100 transition-colors shrink-0">
+        <Link to="/events" className="text-sm font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-4 py-2 rounded-full hover:bg-cyan-100 transition-colors shrink-0">
           All Events →
         </Link>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-5 bg-slate-50 rounded-xl p-1 relative z-10 border border-slate-200">
+      <div className="flex gap-1 mb-5 bg-slate-100 rounded-xl p-1 relative z-10">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-widest transition-all ${
               activeTab === tab.key
-                ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
-                : 'text-slate-500 hover:text-slate-900 hover:bg-white/70'
+                ? `bg-${tab.color}-100 text-${tab.color}-700 shadow-inner border border-${tab.color}-200`
+                : 'text-slate-500 hover:text-slate-900 hover:bg-white'
             }`}
           >
             <span>{tab.icon}</span>
             <span className="hidden sm:inline">{tab.label}</span>
             {tab.events.length > 0 && (
-              <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${activeTab === tab.key ? 'bg-slate-100 text-slate-700 border border-slate-200' : 'bg-white text-slate-600 border border-slate-200'}`}>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${
+                activeTab === tab.key ? `bg-${tab.color}-200 text-${tab.color}-700` : 'bg-white text-slate-500 border border-slate-200'
+              }`}>
                 {tab.events.length}
               </span>
             )}

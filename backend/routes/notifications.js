@@ -60,4 +60,28 @@ router.put('/:id/read', protect, async (req, res) => {
   }
 });
 
+// @route   DELETE /api/notifications/read-all
+// @desc    Delete all read notifications
+// @access  Private
+router.delete('/read-all', protect, async (req, res) => {
+  try {
+    await Notification.deleteMany({ recipient: req.user.id, read: true });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   DELETE /api/notifications/:id
+// @desc    Delete a single notification
+// @access  Private
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    await Notification.deleteOne({ _id: req.params.id, recipient: req.user.id });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

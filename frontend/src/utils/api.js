@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const base = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5001';
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: `${base}/api`,
+  withCredentials: true, // send cookies if backend uses them
 });
 
 // Attach token to every request
@@ -13,7 +15,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle expired / invalid tokens globally
+// Handle expired / invalid tokens globally (keep minimal)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -34,7 +36,6 @@ api.interceptors.response.use(
         window.location.href = '/signin?reason=session_expired';
       }
     }
-
     return Promise.reject(error);
   }
 );

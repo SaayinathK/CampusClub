@@ -39,17 +39,42 @@ const EventDetails = () => {
   const storedUser = JSON.parse(localStorage.getItem('user'));
   const isStudent = storedUser?.role === 'student';
 
-  const fetchEvent = async () => {
-    try {
-      const res = await api.get(`/events/${id}`);
-      const ev = res.data.data;
-      setEvent(ev);
+  // Fetch feedbacks
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        const res = await fetch(`http://localhost:5001/api/feedback/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setDbFeedbacks(data);
+        }
+      } catch (err) {
+        console.error('Error fetching feedbacks:', err);
+      }
+    };
+    fetchFeedbacks();
+  }, [id]);
 
-      if (isStudent && storedUser?._id) {
-        const me = ev.participants?.find(
-          (p) => p.user && (p.user._id || p.user) === storedUser._id
-        );
-        setMyParticipant(me || null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!feedback.trim()) return;
+    try {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user'));
+      const res = await fetch('http://localhost:5001/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ eventId: id, rating, comment: feedback, username: user?.name }),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+        setFeedback('');
+        // Refresh feedbacks
+        const updated = await fetch(`http://localhost:5001/api/feedback/${id}`);
+        if (updated.ok) setDbFeedbacks(await updated.json());
       }
     } catch (err) {
       if (err.response?.status === 404) setNotFound(true);

@@ -30,7 +30,7 @@ const Profile = () => {
   const fetchReceipts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/receipts', {
+      const res = await fetch('http://localhost:5001/api/receipts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -79,7 +79,7 @@ const Profile = () => {
       formData.append('receipt', file);
 
       try {
-        const res = await fetch('http://localhost:5000/api/receipts/upload', {
+        const res = await fetch('http://localhost:5001/api/receipts/upload', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -102,7 +102,7 @@ const Profile = () => {
 
   const handleDownloadReceipt = (receipt) => {
     if (receipt.fileUrl) {
-      const fullUrl = `http://localhost:5000${receipt.fileUrl}`;
+      const fullUrl = `http://localhost:5001${receipt.fileUrl}`;
       window.open(fullUrl, '_blank');
     }
   };
@@ -112,7 +112,7 @@ const Profile = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/receipts/${id}`, {
+      const res = await fetch(`http://localhost:5001/api/receipts/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

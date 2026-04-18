@@ -22,6 +22,9 @@ exports.sendOTP = async (req, res) => {
     try {
         const { email } = req.body;
 
+        console.log(req.body);
+        console.log(res);
+
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {

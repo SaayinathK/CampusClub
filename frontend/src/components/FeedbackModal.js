@@ -11,7 +11,7 @@ const FeedbackModal = ({ isOpen, onClose, eventId, eventTitle }) => {
             const fetchFeedbacks = async () => {
                 setLoading(true);
                 try {
-                    const res = await fetch(`http://localhost:5000/api/feedback/${eventId}`);
+                    const res = await fetch(`http://localhost:5001/api/feedback/${eventId}`);
                     const data = await res.json();
                     if (res.ok) {
                         setFeedbacks(data);

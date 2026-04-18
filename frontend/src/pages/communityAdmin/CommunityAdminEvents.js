@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 import api from '../../utils/api';
 
 const CATEGORIES = ['Technology', 'Arts', 'Sports', 'Academic', 'Cultural', 'Business', 'Science', 'Social', 'Other'];
@@ -84,9 +84,9 @@ export default function CommunityAdminEvents() {
   const handleExport = (eventId, eventTitle) => {
     const token = localStorage.getItem('token');
     const link = document.createElement('a');
-    link.href = `http://localhost:5000/api/events/${eventId}/export`;
+    link.href = `http://localhost:5001/api/events/${eventId}/export`;
     // Attach token via a temp fetch approach
-    fetch(`http://localhost:5000/api/events/${eventId}/export`, {
+    fetch(`http://localhost:5001/api/events/${eventId}/export`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.blob())
@@ -623,7 +623,7 @@ export default function CommunityAdminEvents() {
                     </div>
                     {showQR[p._id] && (
                       <div className="mt-3 flex items-center gap-4 p-3 bg-white rounded-2xl w-fit">
-                        <QRCodeSVG value={p._id} size={80} />
+                        <QRCode value={p._id} size={80} />
                         <div>
                           <p className="text-[9px] font-black uppercase text-slate-700 tracking-widest mb-1">Participant QR</p>
                           <p className="text-[8px] font-mono text-slate-500 break-all max-w-[140px]">{p._id}</p>

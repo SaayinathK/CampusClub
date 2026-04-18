@@ -25,7 +25,7 @@ const SignUp = () => {
   const fetchCommunities = () => {
     setCommunitiesLoading(true);
     setCommunitiesError(false);
-    fetch('http://localhost:5000/api/communities?limit=100')
+    fetch('http://localhost:5001/api/communities?limit=100')
       .then(res => res.json())
       .then(data => {
         setCommunities(data.data || []);
@@ -64,7 +64,7 @@ const SignUp = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/send-otp', {
+      const res = await fetch('http://localhost:5001/api/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
@@ -117,7 +117,7 @@ const SignUp = () => {
         } : {}),
       };
 
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      const res = await fetch('http://localhost:5001/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)

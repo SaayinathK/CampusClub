@@ -34,6 +34,8 @@ import CommunityAdminEvents from './pages/communityAdmin/CommunityAdminEvents';
 // Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentProfile from './pages/student/StudentProfile';
+import StudentRegistrations from './pages/student/StudentRegistrations';
+import StudentNotifications from './pages/student/StudentNotifications';
 
 
 const Home = ({ events }) => (
@@ -59,7 +61,7 @@ function App() {
 
   return (
     <AuthProvider>
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
       <div className="min-h-screen">
         <Navbar />
@@ -132,6 +134,8 @@ function App() {
             {/* Student */}
             <Route path="/student" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />
             <Route path="/student/profile" element={<ProtectedRoute roles={['student']}><StudentProfile /></ProtectedRoute>} />
+            <Route path="/student/registrations" element={<ProtectedRoute roles={['student']}><StudentRegistrations /></ProtectedRoute>} />
+            <Route path="/student/notifications" element={<ProtectedRoute roles={['student']}><StudentNotifications /></ProtectedRoute>} />
 
             {/* Fallback */}
             <Route path="*" element={<NotFound />} />

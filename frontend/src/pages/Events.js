@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ArrowRight, MapPin, Calendar, Users, Wifi } from 'lucide-react';
+import FeedbackModal from '../components/FeedbackModal';
+import { Star, ArrowRight, MessageSquare, Calendar, MapPin, Users, Wifi } from 'lucide-react';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
 
@@ -10,71 +11,63 @@ const CategoryBadge = ({ category }) => (
   </span>
 );
 
-const EventCard = ({ event }) => (
-  <div className="group relative glass-dark rounded-3xl overflow-hidden border border-white/5 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-2xl flex flex-col">
-    {/* Cover image / placeholder */}
-    <div className="h-48 overflow-hidden relative bg-gradient-to-br from-blue-900/40 to-purple-900/40 flex-shrink-0">
-      {event.coverImage ? (
-        <img src={event.coverImage} alt={event.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-5xl font-black text-white/10">
-          {event.title?.charAt(0)}
+const EventCard = ({ event, onViewFeedback }) => {
+  const averageRating = event.ratings?.length > 0
+    ? (event.ratings.reduce((a, b) => a + b, 0) / event.ratings.length).toFixed(1)
+    : "NA";
+
+  return (
+    <div className="group relative glass-dark rounded-3xl overflow-hidden border border-white/5 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-2 shadow-2xl flex flex-col">
+      <div className="h-48 overflow-hidden relative flex-shrink-0">
+        {event.coverImage ? (
+          <img src={event.coverImage} alt={event.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-5xl font-black text-white/10">
+            {event.title?.charAt(0)}
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+        <div className="absolute top-4 left-4">
+          <CategoryBadge category={event.category} />
         </div>
-      )}
-      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
-      <div className="absolute top-4 left-4">
-        <CategoryBadge category={event.category} />
+        <div className="absolute top-4 right-4 px-3 py-1.5 rounded-xl glass text-yellow-500 text-[10px] font-black flex items-center gap-1.5 shadow-2xl border border-white/10">
+          <Star size={12} className="fill-current" /> {averageRating}
+        </div>
+      </div>
+
+      <div className="p-6 flex flex-col flex-1">
+        <h3 className="text-xl font-black mb-2 group-hover:text-blue-400 transition-colors uppercase tracking-tight leading-tight line-clamp-2">
+          {event.title}
+        </h3>
+        {event.description && <p className="text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed">{event.description}</p>}
+
+        <div className="flex flex-col gap-2 mb-5 text-[11px] text-gray-400 font-bold uppercase tracking-widest">
+          <div className="flex items-center gap-2"><Calendar size={12} className="text-blue-500" /> {formatDate(event.startDate)}</div>
+          {event.venue && <div className="flex items-center gap-2"><MapPin size={12} className="text-purple-500" /> {event.venue}</div>}
+          {event.isVirtual && <div className="flex items-center gap-2"><Wifi size={12} className="text-cyan-500" /> Virtual Event</div>}
+          <div className="flex items-center gap-2"><Users size={12} className="text-pink-500" /> {event.participants?.length || 0}{event.maxParticipants ? ` / ${event.maxParticipants} max` : ''}</div>
+          {event.community?.name && <div className="flex items-center gap-2"><Star size={12} className="text-yellow-400" /> {event.community.name}</div>}
+        </div>
+
+        <div className="mt-auto flex gap-3">
+          <Link
+            to={`/events/${event._id}`}
+            className="flex-1 text-center py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[10px] font-black transition-all active:scale-95 uppercase tracking-[0.2em] border border-white/5 flex items-center justify-center gap-2 group/btn"
+          >
+            View Details <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+          </Link>
+          <button
+            onClick={() => onViewFeedback(event)}
+            className="p-3 rounded-xl bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white transition-all active:scale-95 border border-blue-500/20 flex items-center justify-center"
+            title="View Feedbacks"
+          >
+            <MessageSquare size={18} />
+          </button>
+        </div>
       </div>
     </div>
-
-    <div className="p-6 flex flex-col flex-1">
-      <h3 className="text-xl font-black mb-2 group-hover:text-blue-400 transition-colors uppercase tracking-tight leading-tight line-clamp-2">
-        {event.title}
-      </h3>
-      <p className="text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed">
-        {event.description}
-      </p>
-
-      <div className="flex flex-col gap-2 mb-5 text-[11px] text-gray-400 font-bold uppercase tracking-widest">
-        <div className="flex items-center gap-2">
-          <Calendar size={12} className="text-blue-500" />
-          {formatDate(event.startDate)}
-        </div>
-        {event.venue && (
-          <div className="flex items-center gap-2">
-            <MapPin size={12} className="text-purple-500" />
-            {event.venue}
-          </div>
-        )}
-        {event.isVirtual && (
-          <div className="flex items-center gap-2">
-            <Wifi size={12} className="text-cyan-500" />
-            Virtual Event
-          </div>
-        )}
-        <div className="flex items-center gap-2">
-          <Users size={12} className="text-pink-500" />
-          {event.participants?.length || 0} registered
-          {event.maxParticipants ? ` / ${event.maxParticipants} max` : ''}
-        </div>
-      </div>
-
-      <div className="mt-auto">
-        {event.community && (
-          <div className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mb-3">
-            by {event.community?.name}
-          </div>
-        )}
-        <Link
-          to={`/events/${event._id}`}
-          className="w-full text-center py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[10px] font-black transition-all active:scale-95 uppercase tracking-[0.2em] border border-white/5 flex items-center justify-center gap-2 group/btn"
-        >
-          View Details <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-        </Link>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 const FeaturedCard = ({ event }) => (
   <div className="relative group rounded-[2.5rem] overflow-hidden min-h-[420px] flex items-end shadow-2xl shadow-blue-500/10 border border-white/5 hover:border-blue-500/30 transition-all duration-700">
@@ -91,26 +84,11 @@ const FeaturedCard = ({ event }) => (
         </span>
         <CategoryBadge category={event.category} />
       </div>
-      <h3 className="text-3xl md:text-4xl font-black mb-4 uppercase leading-tight tracking-tighter text-white">
-        {event.title}
-      </h3>
+      <h3 className="text-3xl md:text-4xl font-black mb-4 uppercase leading-tight tracking-tighter text-white">{event.title}</h3>
       <div className="flex gap-6 text-[11px] text-gray-400 mb-6 uppercase font-black tracking-[0.2em] items-center flex-wrap">
-        <div className="flex items-center gap-2">
-          <Calendar size={12} className="text-blue-400" />
-          {formatDate(event.startDate)}
-        </div>
-        {event.venue && (
-          <div className="flex items-center gap-2">
-            <MapPin size={12} className="text-purple-400" />
-            {event.venue}
-          </div>
-        )}
-        {event.community?.name && (
-          <div className="flex items-center gap-2">
-            <Star size={12} className="text-yellow-400" />
-            {event.community.name}
-          </div>
-        )}
+        <div className="flex items-center gap-2"><Calendar size={12} className="text-blue-400" /> {formatDate(event.startDate)}</div>
+        {event.venue && <div className="flex items-center gap-2"><MapPin size={12} className="text-purple-400" /> {event.venue}</div>}
+        {event.community?.name && <div className="flex items-center gap-2"><Star size={12} className="text-yellow-400" /> {event.community.name}</div>}
       </div>
       <Link
         to={`/events/${event._id}`}
@@ -127,6 +105,10 @@ export default function Events() {
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('');
   const [search, setSearch] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const CATEGORIES = ['Technology', 'Arts', 'Sports', 'Academic', 'Cultural', 'Business', 'Science', 'Social', 'Other'];
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -147,22 +129,24 @@ export default function Events() {
     fetchEvents();
   }, [category, search]);
 
+  const handleViewFeedback = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
   const featured = events.slice(0, 2);
   const rest = events.slice(2);
-
-  const CATEGORIES = ['Technology', 'Arts', 'Sports', 'Academic', 'Cultural', 'Business', 'Science', 'Social', 'Other'];
 
   return (
     <div className="pt-32 pb-24 min-h-screen">
       <div className="container mx-auto px-6">
-
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-5xl md:text-8xl font-black mb-6 uppercase tracking-tighter">
             Campus <span className="bg-gradient-to-r from-blue-400 to-indigo-500 text-transparent bg-clip-text">Events</span>
           </h1>
           <p className="text-gray-400 max-w-2xl text-lg uppercase font-bold tracking-widest leading-loose border-l-4 border-blue-500 pl-8">
-            Stay updated with everything happening around the campus. Explore and participate.
+            Stay updated with everything happening around the campus. Explore, participate, and share experiences.
           </p>
         </div>
 
@@ -200,9 +184,7 @@ export default function Events() {
           <div className="text-center py-40">
             <div className="text-6xl mb-6">📅</div>
             <h3 className="text-2xl font-black uppercase tracking-widest text-white mb-3">No Events Found</h3>
-            <p className="text-gray-500 uppercase text-sm tracking-widest">
-              {search || category ? 'Try a different search or category' : 'Check back soon for upcoming events'}
-            </p>
+            <p className="text-gray-500 uppercase text-sm tracking-widest">{search || category ? 'Try a different search or category' : 'Check back soon for upcoming events'}</p>
           </div>
         ) : (
           <>
@@ -231,17 +213,19 @@ export default function Events() {
                   <span className="text-gray-500 text-[10px] font-black uppercase tracking-widest whitespace-nowrap">{events.length} total</span>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {rest.map(ev => <EventCard key={ev._id} event={ev} />)}
+                  {rest.map(ev => <EventCard key={ev._id} event={ev} onViewFeedback={handleViewFeedback} />)}
                 </div>
               </section>
             )}
-
-            {/* If all fit in featured */}
-            {rest.length === 0 && featured.length > 0 && (
-              <p className="text-center text-gray-600 text-sm uppercase tracking-widest mt-8">{events.length} event{events.length !== 1 ? 's' : ''} found</p>
-            )}
           </>
         )}
+
+        <FeedbackModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          eventId={selectedEvent?._id}
+          eventTitle={selectedEvent?.title}
+        />
       </div>
     </div>
   );

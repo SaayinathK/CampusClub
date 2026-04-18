@@ -1,48 +1,48 @@
+// auth.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 
-// Legacy role names issued in old tokens → current enum values
+// Legacy role mapping for old tokens
 const ROLE_MAP = { community: 'community_admin', sliit: 'student' };
 
-const protect = async (req, res, next) => {
+/**
+ * Middleware: Protect routes & verify JWT token
+ * - Decodes token
+ * - Normalizes legacy roles
+ * - Fetches user from DB if needed
+ * - Attaches minimal user info to req.user
+ */
+const protect = (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-        return res.status(401).json({ message: 'No token, authorization denied' });
-    }
+    if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
 
     try {
         const tokenSecret = process.env.JWT_SECRET || 'supersecretkey';
         const decoded = jwt.verify(token, tokenSecret);
 
-        // Old tokens may not carry a role or may carry a legacy role name.
-        // In that case, look it up fresh from the database.
-        const rawRole = decoded.role;
-        const normalizedRole = ROLE_MAP[rawRole] || rawRole;
-
-        if (!normalizedRole) {
-            // Token predates the role field — fetch the real role from DB
-            const user = await User.findById(decoded.id).select('role').lean();
-            if (!user) return res.status(401).json({ message: 'User not found' });
-            decoded.role = ROLE_MAP[user.role] || user.role;
-        } else {
-            decoded.role = normalizedRole;
-        }
-
-        req.user = decoded; // { id, role, iat, exp }
+        // Trust the signed JWT — no DB lookup needed on every request.
+        // The token carries id + role, both set at login time and signed with the secret.
+        // This means no DB dependency per request, so nodemon restarts / DB hiccups
+        // never invalidate an otherwise valid session.
+        const normalizedRole = ROLE_MAP[decoded.role] || decoded.role;
+        req.user = { id: decoded.id, role: normalizedRole };
         next();
     } catch (err) {
-        res.status(401).json({ message: 'Token is not valid' });
+        return res.status(401).json({ message: 'Token is not valid' });
     }
 };
 
-const authorize = (...roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
-            return res.status(403).json({ message: 'Access denied: insufficient permissions' });
-        }
-        next();
-    };
+/**
+ * Middleware: Role-based authorization
+ * Usage: authorize('admin', 'community_admin')
+ */
+const authorize = (...roles) => (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+        return res.status(403).json({ message: 'Access denied: insufficient permissions' });
+    }
+    next();
 };
 
-module.exports = { protect, authorize };
+// Shortcut middleware for admin-only routes
+const admin = authorize('admin');
+
+module.exports = { protect, authorize, admin };

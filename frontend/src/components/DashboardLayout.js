@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 // ─── Nav config per role ──────────────────────────────────────────────────────
 const NAV = {
@@ -11,9 +12,9 @@ const NAV = {
     { to: '/admin/events',        label: 'Events',       icon: '📅' },
   ],
   community_admin: [
-    { to: '/community-admin',         label: 'Dashboard',   icon: '⊞' },
-    { to: '/community-admin/members', label: 'Members',     icon: '👥' },
-    { to: '/community-admin/events',  label: 'Events',      icon: '📅' },
+    { to: '/community-admin',              label: 'Dashboard',     icon: '⊞' },
+    { to: '/community-admin/members',      label: 'Members',       icon: '👥' },
+    { to: '/community-admin/events',       label: 'Events',        icon: '📅' },
   ],
 };
 
@@ -73,6 +74,11 @@ export default function DashboardLayout({ children }) {
              {collapsed ? '❯' : '❮'}
           </div>
         </button>
+
+        {/* Notification Bell — always visible */}
+        <div className={`px-3 py-3 border-b border-white/5 flex ${collapsed && !mobileOpen ? 'justify-center' : 'justify-end'}`}>
+          <NotificationBell />
+        </div>
 
         {/* Role badge */}
         {(!collapsed || mobileOpen) && (

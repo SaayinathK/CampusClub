@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
 
@@ -21,17 +21,37 @@ export const AuthProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
+  const didInitRef = useRef(false);
+
+  const isTokenExpired = (token) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (!payload?.exp) return false;
+      return Date.now() >= payload.exp * 1000;
+    } catch {
+      return true;
+    }
+  };
 
   const fetchMe = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) { setLoading(false); setAuthChecked(true); return; }
+    if (isTokenExpired(token)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      setLoading(false);
+      setAuthChecked(true);
+      return;
+    }
     try {
       const res = await api.get('/auth/me');
       setUser(res.data.user);
       localStorage.setItem('user', JSON.stringify(res.data.user));
     } catch (err) {
       const status = err?.response?.status;
-      if (status === 401) {
+      if (status === 401 || status === 404) {
+        // 401 = invalid token, 404 = user no longer exists in DB (e.g. after DB reset)
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
@@ -43,7 +63,11 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => { fetchMe(); }, [fetchMe]);
+  useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+    fetchMe();
+  }, [fetchMe]);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });

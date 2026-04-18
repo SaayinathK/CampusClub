@@ -9,6 +9,11 @@ dotenv.config();
 // Bypass DNS blocking on local router by using Google DNS
 require('dns').setServers(['8.8.8.8', '8.8.4.4']);
 
+// Hardcode MongoDB URI as fallback in case env injection fails
+if (!process.env.MONGODB_URI && !process.env.MONGO_URI) {
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/uniconnect';
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -33,6 +38,8 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/communities', require('./routes/communities'));
 app.use('/api/events', require('./routes/events'));
 app.use('/api/memberships', require('./routes/memberships'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Serve uploads folder static
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -43,8 +50,7 @@ app.get('/', (req, res) => {
 });
 
 // MongoDB Connection
-const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/uniconnect';
-mongoose.connect(MONGO_URI, { family: 4 })
+mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/uniconnect', { family: 4 })
     .then(() => console.log('MongoDB successfully connected'))
     .catch((err) => console.error('MongoDB connection error: ', err));
 

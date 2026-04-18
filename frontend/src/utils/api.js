@@ -20,8 +20,13 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const msg = error.response?.data?.message || '';
 
-    if (status === 401) {
-      // Token is missing, expired, or invalid — clear session and go to sign-in
+    // Only clear session when the JWT itself is bad — NOT on network/DB errors
+    const isDefinitiveAuthFailure = status === 401 && (
+      msg.includes('not valid') ||
+      msg.includes('No token')
+    );
+
+    if (isDefinitiveAuthFailure) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       const publicPaths = ['/signin', '/signup', '/'];

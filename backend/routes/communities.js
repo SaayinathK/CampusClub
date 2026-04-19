@@ -4,6 +4,7 @@ const Community = require('../models/Community');
 const User = require('../models/User');
 const Membership = require('../models/Membership');
 const Event = require('../models/Event');
+const mongoose = require('mongoose');
 const { protect, authorize } = require('../middleware/auth');
 
 // @route   GET /api/communities
@@ -68,11 +69,79 @@ router.get('/my/profile', protect, authorize('community_admin'), async (req, res
   }
 });
 
+// @route   GET /api/communities/feed
+// @desc    Activity feed for a student — events grouped by upcoming / ongoing / completed
+//          from communities the student is a member of
+// @access  Private/Student
+// NOTE: Must be defined BEFORE /:id or Express would match /:id with id='feed'
+router.get('/feed', protect, authorize('student'), async (req, res) => {
+  try {
+    // Find all approved memberships for this student
+    const memberships = await Membership.find({
+      user: req.user.id,
+      status: 'approved',
+    }).select('community');
+
+    const communityIds = memberships.map(m => m.community);
+
+    if (!communityIds.length) {
+      return res.json({ success: true, data: { upcoming: [], ongoing: [], recentlyCompleted: [] } });
+    }
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [upcoming, ongoing, recentlyCompleted] = await Promise.all([
+      // Upcoming: published, startDate in the future
+      Event.find({
+        community: { $in: communityIds },
+        status: 'published',
+        startDate: { $gt: now },
+      })
+        .populate('community', 'name logo category')
+        .select('title startDate endDate venue isVirtual isFree ticketPrice maxParticipants participants community coverImage category')
+        .sort({ startDate: 1 })
+        .limit(10),
+
+      // Ongoing: published, startDate <= now AND (no endDate OR endDate >= now)
+      Event.find({
+        community: { $in: communityIds },
+        status: 'published',
+        startDate: { $lte: now },
+        $or: [{ endDate: { $gte: now } }, { endDate: null }],
+      })
+        .populate('community', 'name logo category')
+        .select('title startDate endDate venue isVirtual isFree ticketPrice maxParticipants participants community coverImage category')
+        .sort({ startDate: -1 })
+        .limit(5),
+
+      // Recently completed: completed in the last 30 days
+      Event.find({
+        community: { $in: communityIds },
+        status: 'completed',
+        updatedAt: { $gte: thirtyDaysAgo },
+      })
+        .populate('community', 'name logo category')
+        .select('title startDate endDate venue community coverImage category participants')
+        .sort({ updatedAt: -1 })
+        .limit(5),
+    ]);
+
+    res.json({ success: true, data: { upcoming, ongoing, recentlyCompleted } });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // @route   GET /api/communities/:id
 // @desc    Get single community
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ success: false, message: 'Community not found' });
+    }
+
     const community = await Community.findById(req.params.id)
       .populate('admin', 'name avatar email')
       .populate('members.user', 'name avatar itNumber');
@@ -319,69 +388,6 @@ router.delete('/:id/members/:userId', protect, authorize('community_admin', 'adm
     );
 
     res.json({ success: true, message: 'Member removed successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// @route   GET /api/communities/feed
-// @desc    Activity feed for a student — events grouped by upcoming / ongoing / completed
-//          from communities the student is a member of
-// @access  Private/Student
-router.get('/feed', protect, authorize('student'), async (req, res) => {
-  try {
-    // Find all approved memberships for this student
-    const memberships = await Membership.find({
-      user: req.user.id,
-      status: 'approved',
-    }).select('community');
-
-    const communityIds = memberships.map(m => m.community);
-
-    if (!communityIds.length) {
-      return res.json({ success: true, data: { upcoming: [], ongoing: [], recentlyCompleted: [] } });
-    }
-
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const [upcoming, ongoing, recentlyCompleted] = await Promise.all([
-      // Upcoming: published, startDate in the future
-      Event.find({
-        community: { $in: communityIds },
-        status: 'published',
-        startDate: { $gt: now },
-      })
-        .populate('community', 'name logo category')
-        .select('title startDate endDate venue isVirtual isFree ticketPrice maxParticipants participants community coverImage category')
-        .sort({ startDate: 1 })
-        .limit(10),
-
-      // Ongoing: published, startDate <= now AND (no endDate OR endDate >= now)
-      Event.find({
-        community: { $in: communityIds },
-        status: 'published',
-        startDate: { $lte: now },
-        $or: [{ endDate: { $gte: now } }, { endDate: null }],
-      })
-        .populate('community', 'name logo category')
-        .select('title startDate endDate venue isVirtual isFree ticketPrice maxParticipants participants community coverImage category')
-        .sort({ startDate: -1 })
-        .limit(5),
-
-      // Recently completed: completed in the last 30 days
-      Event.find({
-        community: { $in: communityIds },
-        status: 'completed',
-        updatedAt: { $gte: thirtyDaysAgo },
-      })
-        .populate('community', 'name logo category')
-        .select('title startDate endDate venue community coverImage category participants')
-        .sort({ updatedAt: -1 })
-        .limit(5),
-    ]);
-
-    res.json({ success: true, data: { upcoming, ongoing, recentlyCompleted } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

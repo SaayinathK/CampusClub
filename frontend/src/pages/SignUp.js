@@ -66,11 +66,11 @@ const SignUp = () => {
     try {
       const res = await fetch('http://localhost:5001/api/auth/send-otp', {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
       });
-      const data = await res.json();
+      const raw = await res.text();
+      const data = raw ? JSON.parse(raw) : {};
 
       if (res.ok) {
         if (data.devOtp) {
@@ -82,7 +82,7 @@ const SignUp = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Error connecting to server. Is the backend running?');
+      alert('Error sending OTP. Please verify your email and try again.');
     }
   };
 

@@ -20,10 +20,12 @@ const transporter = nodemailer.createTransport({
 // Send OTP
 exports.sendOTP = async (req, res) => {
     try {
-        const { email } = req.body;
+        const email = (req.body?.email || '').trim().toLowerCase();
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
 
-        console.log(req.body);
-        console.log(res);
+        console.log('sendOTP request for:', email);
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -47,7 +49,7 @@ exports.sendOTP = async (req, res) => {
         };
 
         // If email isn't configured, just log it for testing
-        if (!emailUser || emailUser === 'your_email@gmail.com') {
+        if (!emailUser || !emailPass || emailUser === 'your_email@gmail.com') {
             console.log(`[DEV MODE] OTP for ${email} is: ${otpCode}`);
             return res.status(200).json({ message: 'OTP stored. Check server console since email is not configured.', devOtp: otpCode });
         }

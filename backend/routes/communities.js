@@ -4,6 +4,7 @@ const Community = require('../models/Community');
 const User = require('../models/User');
 const Membership = require('../models/Membership');
 const Event = require('../models/Event');
+const Notification = require('../models/Notification');
 const mongoose = require('mongoose');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -272,6 +273,17 @@ router.post('/:id/join', protect, authorize('student'), async (req, res) => {
     const { message } = req.body;
     await Membership.create({ user: req.user.id, community: req.params.id, message });
 
+    const student = await User.findById(req.user.id).select('name').lean();
+    const studentName = student?.name || 'A student';
+
+    await Notification.create({
+      recipient: community.admin,
+      type: 'registration_confirmed',
+      title: `New Join Request: ${community.name}`,
+      message: `${studentName} requested to join "${community.name}".`,
+      scheduledFor: new Date(),
+    });
+
     res.status(201).json({ success: true, message: 'Join request submitted. Awaiting Community Admin approval.' });
   } catch (error) {
     if (error.code === 11000) return res.status(400).json({ success: false, message: 'Request already submitted' });
@@ -342,6 +354,31 @@ router.put('/:id/join-requests/:requestId/approve', protect, authorize('communit
         { runValidators: false }
       );
     }
+
+    // Notify both sides when membership is approved.
+    const [studentUser, reviewer] = await Promise.all([
+      User.findById(membership.user).select('name').lean(),
+      User.findById(req.user.id).select('name').lean(),
+    ]);
+
+    const studentName = studentUser?.name || 'A student';
+    const reviewerName = reviewer?.name || 'Community admin';
+    const recipientIds = [...new Set([String(membership.user), String(community.admin)])];
+
+    const notifications = recipientIds.map((recipientId) => {
+      const isStudent = recipientId === String(membership.user);
+      return {
+        recipient: recipientId,
+        type: 'registration_confirmed',
+        title: isStudent ? `Welcome to ${community.name}` : `New Member Joined: ${studentName}`,
+        message: isStudent
+          ? `Your request to join "${community.name}" has been approved. Welcome aboard!`
+          : `${studentName} has been added as a new member of "${community.name}" by ${reviewerName}.`,
+        scheduledFor: new Date(),
+      };
+    });
+
+    await Notification.insertMany(notifications);
 
     res.json({ success: true, message: 'Membership approved' });
   } catch (error) {

@@ -19,6 +19,7 @@ const EventDetails = () => {
    const [event, setEvent] = useState(null);
    const [loading, setLoading] = useState(true);
    const [notFound, setNotFound] = useState(false);
+   const [approving, setApproving] = useState(false);
 
    // Registration state
    const [myParticipant, setMyParticipant] = useState(null); // my participant subdoc
@@ -38,6 +39,7 @@ const EventDetails = () => {
 
    const storedUser = JSON.parse(localStorage.getItem('user'));
    const isStudent = storedUser?.role === 'student';
+   const isAdmin = storedUser?.role === 'admin';
 
    const fetchEvent = async () => {
       try {
@@ -156,6 +158,20 @@ const EventDetails = () => {
          fetchFeedbacks();
       } catch (err) {
          toast.error('Failed to submit feedback');
+      }
+   };
+
+   const handleApproveEvent = async () => {
+      if (!isAdmin || !event || event.status !== 'pending_approval') return;
+      setApproving(true);
+      try {
+         const res = await api.put(`/events/${id}/approve`);
+         toast.success(res.data?.message || 'Event approved and published');
+         await fetchEvent();
+      } catch (err) {
+         toast.error(err.response?.data?.message || 'Failed to approve event');
+      } finally {
+         setApproving(false);
       }
    };
 
@@ -405,6 +421,17 @@ const EventDetails = () => {
                         <p className="text-slate-500 text-xs font-black uppercase tracking-widest">
                            {event.status === 'completed' ? 'This event has ended.' : `Event is ${event.status.replace('_', ' ')}.`}
                         </p>
+                        {isAdmin && event.status === 'pending_approval' && (
+                           <div className="mt-4">
+                              <button
+                                 onClick={handleApproveEvent}
+                                 disabled={approving}
+                                 className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest text-[10px] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                 {approving ? 'Approving...' : 'Approve Event'}
+                              </button>
+                           </div>
+                        )}
                      </div>
                   )}
 

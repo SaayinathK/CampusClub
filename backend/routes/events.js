@@ -3,6 +3,7 @@ const router = express.Router();
 const Event = require('../models/Event');
 const Community = require('../models/Community');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 const { protect, authorize } = require('../middleware/auth');
 
 // Helper: create / replace "registration closing" notifications when deadline is set
@@ -38,46 +39,76 @@ async function scheduleRegistrationClosingNotifs(event, community) {
 
 // Helper: create event published + reminder notifications for all community members
 async function notifyEventPublished(event, community) {
-  if (!community || !community.members.length) return;
-
   const eventDateLabel = new Date(event.startDate).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
   });
   const venueLabel = event.venue ? ` at ${event.venue}` : '';
+  const communityName = community?.name || 'Your community';
 
-  // Immediate: event is now published
-  const publishedNotifs = community.members.map(m => ({
-    recipient: m.user,
-    type: 'event_published',
-    event: event._id,
-    title: `New Event: ${event.title}`,
-    message: `${community.name} has published a new event "${event.title}" on ${eventDateLabel}${venueLabel}.`,
-    scheduledFor: new Date(),
-  }));
+  const payload = [];
+  const seenRecipients = new Set();
 
-  // Reminder: visible on the day the event starts
-  const reminderDate = new Date(event.startDate);
-  reminderDate.setHours(0, 0, 0, 0);
-  const reminderNotifs = community.members.map(m => ({
-    recipient: m.user,
-    type: 'event_reminder',
-    event: event._id,
-    title: `Today: ${event.title}`,
-    message: `The event "${event.title}" by ${community.name} is happening today${venueLabel}!`,
-    scheduledFor: reminderDate,
-  }));
+  const addRecipientOnce = (recipient, itemFactory) => {
+    const key = String(recipient);
+    if (!recipient || seenRecipients.has(key)) return;
+    seenRecipients.add(key);
+    payload.push(itemFactory(recipient));
+  };
+
+  // Only member-facing notifications require member data.
+  if (community && Array.isArray(community.members) && community.members.length) {
+    // Immediate: event is now published
+    const publishedNotifs = community.members.map(m => ({
+      recipient: m.user,
+      type: 'event_published',
+      event: event._id,
+      title: `New Event: ${event.title}`,
+      message: `${communityName} has published a new event "${event.title}" on ${eventDateLabel}${venueLabel}.`,
+      scheduledFor: new Date(),
+    }));
+
+    // Reminder: visible on the day the event starts
+    const reminderDate = new Date(event.startDate);
+    reminderDate.setHours(0, 0, 0, 0);
+    const reminderNotifs = community.members.map(m => ({
+      recipient: m.user,
+      type: 'event_reminder',
+      event: event._id,
+      title: `Today: ${event.title}`,
+      message: `The event "${event.title}" by ${communityName} is happening today${venueLabel}!`,
+      scheduledFor: reminderDate,
+    }));
+
+    publishedNotifs.forEach((n) => addRecipientOnce(n.recipient, () => n));
+    reminderNotifs.forEach((n) => payload.push(n));
+  }
+
+  // Also notify all approved students so event approvals are visible to students platform-wide.
+  const students = await User.find({ role: 'student', status: 'approved' }).select('_id').lean();
+  students.forEach((s) => {
+    addRecipientOnce(s._id, (recipient) => ({
+      recipient,
+      type: 'event_published',
+      event: event._id,
+      title: `New Event: ${event.title}`,
+      message: `${communityName} has published a new event "${event.title}" on ${eventDateLabel}${venueLabel}.`,
+      scheduledFor: new Date(),
+    }));
+  });
 
   // Notify the CA whose event was approved
-  const caNotif = {
-    recipient: event.createdBy,
+  addRecipientOnce(event.createdBy, (recipient) => ({
+    recipient,
     type: 'event_published',
     event: event._id,
     title: `Event Approved: ${event.title}`,
     message: `Your event "${event.title}" has been approved and is now live!`,
     scheduledFor: new Date(),
-  };
+  }));
 
-  await Notification.insertMany([...publishedNotifs, ...reminderNotifs, caNotif]);
+  if (payload.length) {
+    await Notification.insertMany(payload);
+  }
 }
 
 // @route   GET /api/events
@@ -243,6 +274,30 @@ router.post('/', protect, authorize('community_admin'), async (req, res) => {
       createdBy: req.user.id,
       status: 'pending_approval',
     });
+
+    // Immediate notifications after successful creation
+    await Notification.create({
+      recipient: req.user.id,
+      type: 'event_published',
+      event: event._id,
+      title: `Event Submitted: ${event.title}`,
+      message: 'Your event was submitted successfully and is now pending admin approval.',
+      scheduledFor: new Date(),
+    });
+
+    const admins = await User.find({ role: 'admin' }).select('_id');
+    if (admins.length) {
+      await Notification.insertMany(
+        admins.map((admin) => ({
+          recipient: admin._id,
+          type: 'event_published',
+          event: event._id,
+          title: `Event Pending Approval: ${event.title}`,
+          message: `${community.name} submitted a new event that requires review.`,
+          scheduledFor: new Date(),
+        }))
+      );
+    }
 
     // Schedule registration_closing notifications if deadline is set
     if (registrationDeadline) {
@@ -516,6 +571,19 @@ router.post('/:id/register', protect, authorize('student'), async (req, res) => 
     const paymentStatus = event.isFree ? 'not_required' : 'pending';
     event.participants.push({ user: req.user.id, type: 'student', paymentStatus });
     await event.save();
+
+    const student = await User.findById(req.user.id).select('name').lean();
+    const studentName = student?.name || 'A student';
+
+    // Notify the community admin/event owner about a new registration.
+    await Notification.create({
+      recipient: event.createdBy,
+      type: 'registration_confirmed',
+      event: event._id,
+      title: `New Registration: ${event.title}`,
+      message: `${studentName} has registered for your event "${event.title}".`,
+      scheduledFor: new Date(),
+    });
 
     // Notify the student that their registration is confirmed
     const eventDateLabel = new Date(event.startDate).toLocaleDateString('en-US', {

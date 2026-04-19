@@ -61,7 +61,11 @@ export default function NotificationBell() {
   };
 
   const handleOpen = () => {
-    setOpen(o => !o);
+    setOpen(o => {
+      const next = !o;
+      if (next) fetchNotifications();
+      return next;
+    });
   };
 
   return (

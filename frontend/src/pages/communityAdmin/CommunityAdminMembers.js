@@ -8,6 +8,7 @@ export default function CommunityAdminMembers() {
    const [members, setMembers] = useState([]);
    const [joinRequests, setJoinRequests] = useState([]);
    const [pendingAccounts, setPendingAccounts] = useState([]);
+   const [eventRegistrations, setEventRegistrations] = useState([]);
    const [tab, setTab] = useState('requests');
    const [loading, setLoading] = useState(true);
    const [searchTerm, setSearchTerm] = useState('');
@@ -23,9 +24,38 @@ export default function CommunityAdminMembers() {
             api.get(`/communities/${c._id}/join-requests`),
             api.get(`/users/community/${c._id}/pending-students`),
          ]);
+
+         const eventsRes = await api.get('/events/my-community');
+         const events = eventsRes.data.data || [];
+         const participantResults = await Promise.all(
+            events.map((ev) => api.get(`/events/${ev._id}/participants`))
+         );
+
+         const registrations = [];
+         participantResults.forEach((res, idx) => {
+            const ev = events[idx];
+            const participants = res.data.data || [];
+            participants.forEach((p) => {
+               registrations.push({
+                  registrationId: `${ev._id}_${p._id}`,
+                  eventId: ev._id,
+                  eventTitle: ev.title,
+                  eventDate: ev.startDate,
+                  name: p.user?.name || p.externalName || 'Unknown',
+                  email: p.user?.email || p.externalEmail || '—',
+                  itNumber: p.user?.itNumber || '—',
+                  participantType: p.type || 'member',
+                  paymentStatus: p.paymentStatus || 'not_required',
+                  attended: !!p.attended,
+                  registeredAt: p.registeredAt,
+               });
+            });
+         });
+
          setMembers(membersRes.data.data || []);
          setJoinRequests(requestsRes.data.data || []);
          setPendingAccounts(accountsRes.data.data || []);
+         setEventRegistrations(registrations);
       } catch { toast.error('Failed to load data'); }
       finally { setLoading(false); }
    };
@@ -55,6 +85,16 @@ export default function CommunityAdminMembers() {
       m.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       m.user?.itNumber?.toLowerCase().includes(searchTerm.toLowerCase())
    );
+
+   const filteredRegistrations = eventRegistrations.filter((r) => {
+      const q = searchTerm.toLowerCase();
+      return (
+         r.name?.toLowerCase().includes(q) ||
+         r.email?.toLowerCase().includes(q) ||
+         r.itNumber?.toLowerCase().includes(q) ||
+         r.eventTitle?.toLowerCase().includes(q)
+      );
+   });
 
    return (
       <div className="min-h-screen p-6 md:p-10 font-sans text-slate-900 relative overflow-hidden bg-transparent">
@@ -174,6 +214,76 @@ export default function CommunityAdminMembers() {
                            ))}
                         </div>
                      )
+                  )}
+
+                  {/* Event Registrations Tab */}
+                  {tab === 'registrations' && (
+                     <div className="space-y-6">
+                        <div className="relative w-full max-w-md group">
+                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-blue-400 transition-colors">🔍</span>
+                           <input
+                              type="text"
+                              placeholder="Search by student, email, IT number, or event..."
+                              value={searchTerm}
+                              onChange={e => setSearchTerm(e.target.value)}
+                              className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-10 py-3 text-slate-900 focus:outline-none focus:border-blue-400/50 focus:ring-1 focus:ring-blue-300/40 transition-all font-medium text-sm"
+                           />
+                        </div>
+
+                        {filteredRegistrations.length === 0 ? (
+                           <div className="surface-panel border border-slate-200 rounded-3xl p-16 text-center shadow-2xl flex flex-col items-center">
+                              <span className="text-6xl mb-6 opacity-50 drop-shadow-2xl">🎟️</span>
+                              <h3 className="text-2xl font-black text-slate-900 mb-2">No Event Registrations Yet</h3>
+                              <p className="text-slate-500 font-medium">Registered participants from your events will appear here.</p>
+                           </div>
+                        ) : (
+                           <div className="surface-panel rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
+                              <div className="overflow-x-auto">
+                                 <table className="w-full text-left border-collapse">
+                                    <thead>
+                                       <tr className="bg-slate-50 border-b border-slate-200">
+                                          <th className="p-5 font-black text-[10px] text-slate-500 uppercase tracking-widest">Participant</th>
+                                          <th className="p-5 font-black text-[10px] text-slate-500 uppercase tracking-widest">Event</th>
+                                          <th className="p-5 font-black text-[10px] text-slate-500 uppercase tracking-widest">Type</th>
+                                          <th className="p-5 font-black text-[10px] text-slate-500 uppercase tracking-widest">Payment</th>
+                                          <th className="p-5 font-black text-[10px] text-slate-500 uppercase tracking-widest">Attendance</th>
+                                          <th className="p-5 font-black text-[10px] text-slate-500 uppercase tracking-widest">Registered</th>
+                                       </tr>
+                                    </thead>
+                                    <tbody>
+                                       {filteredRegistrations.map((r, i) => (
+                                          <tr key={r.registrationId} className={`border-b border-slate-200 hover:bg-slate-50 transition-colors ${i === filteredRegistrations.length - 1 ? 'border-b-0' : ''}`}>
+                                             <td className="p-5">
+                                                <div className="font-bold text-slate-900 text-sm leading-tight">{r.name}</div>
+                                                <div className="text-xs text-slate-500">{r.email}</div>
+                                                <div className="text-[10px] text-cyan-700 font-mono mt-1">{r.itNumber}</div>
+                                             </td>
+                                             <td className="p-5">
+                                                <div className="font-bold text-slate-900 text-sm leading-tight">{r.eventTitle}</div>
+                                                <div className="text-xs text-slate-500">{r.eventDate ? new Date(r.eventDate).toLocaleDateString() : '—'}</div>
+                                             </td>
+                                             <td className="p-5 text-xs font-bold text-slate-700 uppercase">{r.participantType}</td>
+                                             <td className="p-5">
+                                                <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${r.paymentStatus === 'verified' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : r.paymentStatus === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : r.paymentStatus === 'rejected' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                                                   {r.paymentStatus}
+                                                </span>
+                                             </td>
+                                             <td className="p-5 text-xs font-bold">
+                                                <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest border ${r.attended ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                                                   {r.attended ? 'Present' : 'Absent'}
+                                                </span>
+                                             </td>
+                                             <td className="p-5 text-xs text-slate-500 font-medium">
+                                                {r.registeredAt ? new Date(r.registeredAt).toLocaleDateString() : '—'}
+                                             </td>
+                                          </tr>
+                                       ))}
+                                    </tbody>
+                                 </table>
+                              </div>
+                           </div>
+                        )}
+                     </div>
                   )}
 
                   {/* Current Members Tab */}
